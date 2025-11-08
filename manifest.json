@@ -1,0 +1,32 @@
+{
+	"format_version": 2,
+	"metadata": {
+		"authors": [
+			"CNQuanYeCha",
+			"MiaoMiaoMax"
+		],
+		"url": "https://space.bilibili.com/1968985335",
+		"product_type": "addon"
+	},
+	"header": {
+		"description": "§l§3CNQuanYeCha的MeowFish-自动钓鱼\n§c注意：该模块适配游戏版本为1.21.0或以上\n在1.21.70或更高版本可兼容成就\n\n§f作者bilibili主页：\nhttps://space.bilibili.com/1968985335\n\n§f本作品采用知识共享署名-非商业性-相同方式共享 4.0 国际许可协议进行许可。 要查看此许可证的副本，请访问\nhttp://creativecommons.org/licenses/by-nc-sa/4.0/.\n\nThis work is licensed under the Creative Commons 署名-非商业性使用-相同方式共享 4.0 国际 License. To view a copy of this license, visit\nhttp://creativecommons.org/licenses/by-nc-sa/4.0/.",
+		"name": "MeowFish-自动钓鱼",
+		"uuid": "31716871-2d08-487b-bf4b-242019f100d8",
+		"version": [0, 1, 0],
+		"min_engine_version": [1, 21, 0]
+	},
+	"modules": [{
+		"description": "MeowFish",
+		"type": "script",
+		"language": "javascript",
+		"uuid": "7c19b4fc-a25c-41be-ad9c-cb6a433af203",
+		"version": [0, 1, 0],
+		"entry": "scripts/main.js"
+	}],
+	"dependencies": [
+		{
+			"module_name": "@minecraft/server",
+			"version": [1, 11, 0]
+		}
+	]
+}
