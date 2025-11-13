@@ -3,10 +3,16 @@
 # MeowFish
 > Only Chinese versions available. (This sentence is machine-translated)
 
+## 当前版本
+v0.1.1-bate
+
 ## 使用方法
 持有钓鱼竿，下蹲抛竿即可触发。
 
-在`行为包\scripts\`目录里 [SystemSettings.js](./scripts/SystemSettings.js) 里有该功能开关， 设置之后只需要使用`/reload`命令即可刷新
+用纸张命名为 `MF设置` 、 `MF設置` 或 `MFSetting`   
+电脑端右键使用 或 手机端长按使用 -> 可打开个人设置
+
+在 `行为包\scripts\` 目录的 [SystemSettings.js](./scripts/SystemSettings.js) 文件里全部功能的默认设置， 设置之后只需要使用 `/reload` 命令即可刷新
 
 ## 游戏版本
 适配游戏版本为 1.21.0 或 以上
