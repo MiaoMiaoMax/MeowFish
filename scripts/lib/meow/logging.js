@@ -7,7 +7,7 @@
 */
 
 import { world } from "@minecraft/server";
-import { Settings } from "../../SystemSettings.js";
+import { Settings } from "../../SystemSettings";
 
 // 信息发送前缀
 const PREFIX = "[§3MeowHouseModule§r] ";

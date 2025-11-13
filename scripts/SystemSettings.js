@@ -26,17 +26,95 @@ const Settings = {
     下面每一个选项都长这个样子：
     选项:[参数]
     [参数]就是你可以修改的内容。
+  
+    This is the core configuration file.
+    
+    Please do not enter irrelevant content,
+    and do not modify anything other than option parameters,
+    otherwise the configuration file will lose its effect
+    and all settings will use default values,
+    unless you know what you are entering.
+    
+    Each option below has instructions,
+    please read the corresponding instructions before modification.
+    
+    This configuration file will be loaded and applied each time the core is loaded.
+    
+    Each option looks like this:
+    Option: [parameter]
+    [parameter] is what you can modify.
   */
 
 
   //自动钓鱼开关
+  // Auto fishing switch
 
   auto: 1
 
   /*
-    可填入“0”和“1”，
-    “0”代表“关”，
-    “1”代表“开”。
+    可填入"0"和"1"，
+    "0"代表"关"，
+    "1"代表"开"。
+    
+    Can fill in "0" and "1",
+    "0" means "off",
+    "1" means "on".
+  */
+  ,
+
+
+  //默认语言
+  // Default language
+
+  language: "zh_CN"
+  /*
+    可填入"zh_CN", "zh_TW", "en-US"
+
+    zh_CN 代表 简体中文
+    zh_TW 代表 繁體中文
+    en-US 代表 英文
+    
+    Can fill in "zh_CN", "zh_TW", "en-US"
+
+    zh_CN represents Simplified Chinese
+    zh_TW represents Traditional Chinese
+    en-US represents English
+  */
+  ,
+
+
+  //默认是否保护钓鱼竿耐久（留1点耐久）
+  // Whether to protect fishing rod durability by default (leave 1 point durability)
+  // Protect fishing rod durability by default (keep 1 durability point)
+
+  protect: 1
+
+  /*
+    可填入"0"和"1"，
+    "0"代表"不保护"，
+    "1"代表"保护"。
+    
+    Can fill in "0" and "1",
+    "0" means "not protected",
+    "1" means "protected".
+  */
+  ,
+
+
+  //默认是否搜索背包替换当前钓鱼竿（如果当前钓鱼竿没耐久）
+  // Whether to search inventory to replace current fishing rod by default (if current fishing rod has no durability)
+  // Search inventory for replacement fishing rod when current one has no durability
+
+  replace: 0
+
+  /*
+    可填入"0"和"1"，
+    "0"代表"不替换"，
+    "1"代表"替换"。
+    
+    Can fill in "0" and "1",
+    "0" means "do not replace",
+    "1" means "replace".
   */
   ,
 

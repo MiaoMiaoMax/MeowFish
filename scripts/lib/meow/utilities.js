@@ -7,7 +7,7 @@
 */
 
 import * as mc from "@minecraft/server";
-import { error } from "./logging.js";
+import { error } from "./logging";
 
 /**
  * 执行命令

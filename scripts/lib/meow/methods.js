@@ -7,6 +7,6 @@
 */
 
 // 导出子模块
-export * from "./logging.js";
-export * from "./utilities.js";
-export * from "./vector3.js";
+export * from "./logging";
+export * from "./utilities";
+export * from "./vector3";

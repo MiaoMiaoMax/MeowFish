@@ -7,8 +7,8 @@
 */
 
 import { system, world } from "@minecraft/server";
-import { EventSignal } from "./event_signal.js";
-import { Vector3 } from "./vector3.js";
+import { EventSignal } from "./event_signal";
+import { Vector3 } from "./vector3";
 
 /**
  * 钓鱼事件管理类
@@ -16,37 +16,37 @@ import { Vector3 } from "./vector3.js";
 class FishingEventManager {
   /**
    * 抛竿事件信号
-   * @type {import("../@types/渔.js").castRodSignal}
+   * @type {import("../@types/fishing_event").castRodSignal}
    */
   castRod = new EventSignal();
 
   /**
    * 预收杆事件信号（可在收杆前拦截）
-   * @type {import("../@types/渔.js").beforeReelRodSignal}
+   * @type {import("../@types/fishing_event").beforeReelRodSignal}
    */
   beforeReelRod = new EventSignal();
 
   /**
    * 收杆事件信号
-   * @type {import("../@types/渔.js").reelRodSignal}
+   * @type {import("../@types/fishing_event").reelRodSignal}
    */
   reelRod = new EventSignal();
 
   /**
    * 鱼钩在水面状态改变事件信号
-   * @type {import("../@types/渔.js").hookOnWaterSurfaceChangeSignal}
+   * @type {import("../@types/fishing_event").hookOnWaterSurfaceChangeSignal}
    */
   hookOnWaterSurfaceChange = new EventSignal();
 
   /**
    * 鱼钩勾到实体事件信号
-   * @type {import("../@types/渔.js").hookHitEntitySignal}
+   * @type {import("../@types/fishing_event").hookHitEntitySignal}
    */
   hookHitEntity = new EventSignal();
 
   /**
    * 鱼咬钩事件信号
-   * @type {import("../@types/渔.js").fishBiteSignal}
+   * @type {import("../@types/fishing_event").fishBiteSignal}
    */
   fishBite = new EventSignal();
 
@@ -204,7 +204,7 @@ class FishingEventManager {
 
     // 监听实体移除事件（收杆）
     world.beforeEvents.entityRemove.subscribe(event => {
-      if (event.removedEntity.typeId !== "minecraft:fishing_hook") return;
+      if (event.removedEntity?.typeId !== "minecraft:fishing_hook") return;
       this.#fishing.forEach((v, p) => {
         if (v.hook !== event.removedEntity) return;
         const w = this.isHookOnWaterSurface(v.hook);

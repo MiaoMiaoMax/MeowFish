@@ -6,9 +6,10 @@
     http://creativecommons.org/licenses/by-nc-sa/4.0/
 */
 
-export * from "./meow/methods.js";
+export * from "./meow/methods";
+export * from "./meow/language";
 
-import { fishingEvents } from "./meow/fishing_event.js";
+import { fishingEvents } from "./meow/fishing_event";
 export class Events {
     static fishing = fishingEvents
 }
