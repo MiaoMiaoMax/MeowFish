@@ -4,7 +4,7 @@
 > Only Chinese versions available. (This sentence is machine-translated)
 
 ## 当前版本
-v0.1.2-bate
+v0.1.2-beta
 
 ## 使用方法
 持有钓鱼竿，下蹲抛竿即可触发。
