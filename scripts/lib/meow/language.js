@@ -35,25 +35,30 @@ const translations = {
     zh_TW: "釣魚竿耐久: {current}/{max} 即將替換",
     en_US: "Fishing rod durability: {current}/{max} about to replace",
   },
+  rod_about_to_warning: {
+    zh_CN: "钓鱼竿耐久: {current}/{max} §6低耐久！",
+    zh_TW: "釣魚竿耐久: {current}/{max} §6低耐久！",
+    en_US: "Fishing rod durability: {current}/{max} §6low durability!",
+  },
   creative_mode: {
     zh_CN: "创造模式",
     zh_TW: "創造模式",
     en_US: "Creative mode",
   },
   rod_replaced_successfully: {
-    zh_CN: "钓鱼竿替换成功",
-    zh_TW: "釣魚竿替換成功",
-    en_US: "Fishing rod replaced successfully",
+    zh_CN: "§a钓鱼竿替换成功",
+    zh_TW: "§a釣魚竿替換成功",
+    en_US: "§aFishing rod replaced successfully",
   },
   rod_replaced_failed: {
-    zh_CN: "钓鱼竿替换失败",
-    zh_TW: "釣魚竿替換失敗",
-    en_US: "Fishing rod replacement failed",
+    zh_CN: "§c钓鱼竿替换失败",
+    zh_TW: "§c釣魚竿替換失敗",
+    en_US: "§cFishing rod replacement failed",
   },
   rod_destroyed: {
-    zh_CN: "钓鱼竿损毁",
-    zh_TW: "釣魚竿損毀",
-    en_US: "Fishing rod destroyed",
+    zh_CN: "§c钓鱼竿损毁",
+    zh_TW: "§c釣魚竿損毀",
+    en_US: "§cFishing rod destroyed",
   },
   setting_title: {
     zh_CN: "MeowFish设置",
@@ -66,14 +71,19 @@ const translations = {
     en_US: "Language(语言): ",
   },
   setting_protect: {
-    zh_CN: "保护钓鱼竿耐久（留1点耐久）\n",
-    zh_TW: "保護釣魚竿耐久（留1點耐久）\n",
-    en_US: "Protect fishing rod durability (leave 1 durability)\n",
+    zh_CN: "保护钓鱼竿耐久（留1点耐久）\n\n",
+    zh_TW: "保護釣魚竿耐久（留1點耐久）\n\n",
+    en_US: "Protect fishing rod durability (leave 1 durability)\n\n",
   },
   setting_replace: {
-    zh_CN: "搜索背包替换当前钓鱼竿\n（如果当前钓鱼竿没耐久）\n",
-    zh_TW: "搜尋背包替換當前釣魚竿\n（如果當前釣魚竿沒耐久）\n",
-    en_US: "Search inventory to replace current fishing rod\n (if current fishing rod has no durability)\n",
+    zh_CN: "搜索背包替换当前钓鱼竿\n（如果当前钓鱼竿没耐久）\n\n",
+    zh_TW: "搜尋背包替換當前釣魚竿\n（如果當前釣魚竿沒耐久）\n\n",
+    en_US: "Search inventory to replace current fishing rod\n (if current fishing rod has no durability)\n\n",
+  },
+  setting_compulsoryAuto: {
+    zh_CN: "强制自动钓鱼（无论是否下蹲）\n\n",
+    zh_TW: "強制自動釣魚（無論是否蹲下）\n\n",
+    en_US: "Compulsory auto-fishing (regardless of whether you are crouching)\n\n",
   },
 };
 

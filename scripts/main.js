@@ -1,49 +1,54 @@
 /*
- * 本作品采用知识共享署名-非商业性-相同方式共享 4.0 国际许可协议进行许可。
- * https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans
- */
+    本作品采用知识共享署名-非商业性-相同方式共享 4.0 国际许可协议进行许可。 要查看此许可证的副本，请访问
+    https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans
+
+    This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. To view a copy of this license, visit
+    http://creativecommons.org/licenses/by-nc-sa/4.0/
+*/
 
 import * as mc from "@minecraft/server";
 import { ModalFormData } from "@minecraft/server-ui";
 import { Settings } from "./SystemSettings";
 
-// =============== 第一部分：测试钓鱼竿生成 ===============
-mc.system.afterEvents.scriptEventReceive.subscribe(event => {
-  if (event.id !== "meow:t" || !event.sourceEntity) return;
+// mc.system.afterEvents.scriptEventReceive.subscribe(event => {
+//   if (event.id !== "meow:t" || !event.sourceEntity) return;
 
-  const { dimension, location } = event.sourceEntity;
-  const createRod = (nameTag, enchantments = [], damageOffset = 0) => {
-    const item = new mc.ItemStack("minecraft:fishing_rod");
-    item.nameTag = nameTag;
+//   const { dimension, location } = event.sourceEntity;
+//   const createRod = (nameTag, enchantments = [], damageOffset = 0) => {
+//     const item = new mc.ItemStack("minecraft:fishing_rod");
+//     item.nameTag = nameTag;
 
-    const durability = item.getComponent("minecraft:durability");
-    if (durability) durability.damage = durability.maxDurability - damageOffset;
+//     const durability = item.getComponent("minecraft:durability");
+//     if (durability) durability.damage = durability.maxDurability - damageOffset;
 
-    const enchant = item.getComponent("minecraft:enchantable");
-    if (enchant) {
-      enchant.removeAllEnchantments();
-      for (const { type, level } of enchantments) {
-        enchant.addEnchantment({ type: mc.EnchantmentTypes.get(type), level });
-      }
-    }
+//     const enchant = item.getComponent("minecraft:enchantable");
+//     if (enchant) {
+//       enchant.removeAllEnchantments();
+//       for (const { type, level } of enchantments) {
+//         enchant.addEnchantment({ type: mc.EnchantmentTypes.get(type), level });
+//       }
+//     }
 
-    dimension.spawnItem(item, location);
-  };
+//     dimension.spawnItem(item, location);
+//   };
 
-  // 生成四把测试钓鱼竿
-  createRod("低耐久1", [{ type: "lure", level: 3 }], 3);
-  createRod("低耐久2", [{ type: "lure", level: 3 }], 3);
-  createRod("低耐久3-经验修补", [
-    { type: "lure", level: 3 },
-    { type: "mending", level: 1 }
-  ], 3);
-  createRod("低耐久4-耐久3", [
-    { type: "lure", level: 3 },
-    { type: "unbreaking", level: 3 }
-  ], 5);
-});
+//   // 生成四把测试钓鱼竿
+//   createRod("低耐久1", [{ type: "lure", level: 3 }], 3);
+//   createRod("低耐久2", [{ type: "lure", level: 3 }], 3);
+//   createRod("低耐久3-经验修补", [
+//     { type: "lure", level: 3 },
+//     { type: "mending", level: 1 }
+//   ], 3);
+//   createRod("低耐久4-耐久3", [
+//     { type: "lure", level: 3 },
+//     { type: "unbreaking", level: 3 }
+//   ], 5);
+//   createRod("快满耐久5-经验修补", [
+//     { type: "lure", level: 3 },
+//     { type: "mending", level: 1 }
+//   ], 383)
+// });
 
-// =============== 第二部分：自动钓鱼系统（按需加载） ===============
 if (Settings.auto) {
   await import("./lib/index").then(meow => {
     const LOOT_ITEMS = ["junk", "treasure", "fish"];
@@ -66,9 +71,9 @@ if (Settings.auto) {
       durability?.damage >= (durability.maxDurability - 1) && mendingLevel < 1;
 
     const handleMending = (xp, durability) => {
-      const repairAmount = Math.min(xp, Math.floor(durability.damage / 2));
-      durability.damage -= repairAmount * 2;
-      return xp - repairAmount;
+      const damage = durability.damage - xp * 2;
+      durability.damage = Math.max(0, damage);
+      return (Math.floor(Math.min(0, damage / 2)) * -1);
     };
 
     const showXpMessage = (player, lang, xp, suffix = "") => {
@@ -113,7 +118,8 @@ if (Settings.auto) {
     // —————— 事件监听 ——————
 
     meow.Events.fishing.castRod.subscribe(event => {
-      if (!event.player.isSneaking) return;
+      const compulsoryAuto = event.player.getDynamicProperty("meow_compulsoryAuto") ?? Boolean(Settings.compulsory_auto);
+      if (!compulsoryAuto && !event.player.isSneaking) return;
       AutoFish.add(event.player.id);
       const lang = event.player.getDynamicProperty("meow_language");
       event.player.sendMessage(meow.getLocalizedText("auto_fish", lang));
@@ -130,7 +136,7 @@ if (Settings.auto) {
       evt.subscribe(e => AutoFish.delete(e.player.id))
     );
 
-    mc.world.beforeEvents.playerLeave.subscribe(e => AutoFish.delete(e.playerId));
+    mc.world.beforeEvents.playerLeave.subscribe(e => AutoFish.delete(e.player.id));
 
     // —————— 核心：鱼咬钩处理 ——————
 
@@ -148,6 +154,7 @@ if (Settings.auto) {
       const isInCreative = isCreative(player);
 
       const durability = item.getComponent("minecraft:durability");
+      if (!durability) return meow.error("Failed to get fishing rod durability (无法获取鱼竿耐久)");
       const enchant = item.getComponent("minecraft:enchantable");
       const mending = enchant?.getEnchantment("mending")?.level ?? 0;
       const luck = enchant?.getEnchantment("luck_of_the_sea")?.level ?? 0;
@@ -171,15 +178,16 @@ if (Settings.auto) {
         }
       }
 
-      const maxDur = durability?.maxDurability ?? 0;
-      const currentDur = maxDur - (durability?.damage ?? 0);
+      const maxDur = durability.maxDurability;
+      const currentDur = maxDur - durability.damage;
 
       // 钓鱼竿是否已损坏？
-      const isBroken = durability?.damage >= maxDur;
+      const isBroken = durability.damage >= maxDur;
 
       let messageSuffix = "";
       let needReplace = false;
       let yesReplace = false;
+      let stop = false;
 
       if (isInCreative) {
         messageSuffix = meow.getLocalizedText("creative_mode", lang);
@@ -194,7 +202,10 @@ if (Settings.auto) {
           messageSuffix = meow.getLocalizedText("rod_replaced_successfully", lang);
         } else if (replace && currentDur <= 3) {
           messageSuffix = meow.getLocalizedText("rod_about_to_replace", lang, { current: currentDur, max: maxDur });
-          meow.runCommand(player, "playsound dig.bone_block @a ^^^1 0.8");
+          meow.runCommand(player, "playsound dig.bone_block @a ^^^1 1.2");
+        } else if (currentDur <= 3) {
+          messageSuffix = meow.getLocalizedText("rod_about_to_warning", lang, { current: currentDur, max: maxDur });
+          meow.runCommand(player, "playsound dig.bone_block @a ^^^1 1.2");
         } else {
           messageSuffix = meow.getLocalizedText("rod_durability_info", lang, { current: currentDur, max: maxDur });
         }
@@ -204,7 +215,8 @@ if (Settings.auto) {
       if (needReplace) {
         if (!replaceFishingRod(player, item)) {
           messageSuffix = meow.getLocalizedText("rod_replaced_failed", lang);
-          mc.system.runTimeout(() => equippable.setEquipment(mc.EquipmentSlot.Mainhand), 1);
+          if (protect) stop = true;
+          else mc.system.runTimeout(() => equippable.setEquipment(mc.EquipmentSlot.Mainhand), 1);
         } else yesReplace = true;
       } else if (!isInCreative) {
         mc.system.runTimeout(() => {
@@ -222,12 +234,15 @@ if (Settings.auto) {
       showXpMessage(player, lang, xp, messageSuffix);
 
       // 声音与粒子
-      meow.runCommand(player, "playsound random.orb @a ^^^1 0.3");
-      if (isBroken) {
-        if (yesReplace) meow.runCommand(player, "playsound mob.villager.yes @a ^^^1 0.8");
-        else meow.runCommand(player, "playsound random.break @a ^^^1 0.8");
+      meow.runCommand(player, "playsound random.orb @a ^^^1 0.2 0.5");
+      if (yesReplace) meow.runCommand(player, "playsound mob.villager.yes @a ^^^1 0.7");
+      else if (replace && needReplace) {
+        if (isBroken) meow.runCommand(player, "playsound random.break @a ^^^1 0.7");
+        meow.runCommand(player, "playsound mob.villager.no @a ^^^1 0.7");
       }
+      else if (isBroken) meow.runCommand(player, "playsound random.break @a ^^^1 0.7");
 
+      if (stop) return;
       // 经验与战利品
       player.addExperience(xp);
       const loc = meow.Vector3.floor(event.hook.location);
@@ -264,7 +279,7 @@ if (Settings.auto) {
         const len = Math.sqrt(dir.x**2 + dir.y**2 + dir.z**2) || 1;
         event.entity.applyImpulse({
           x: (dir.x / len) * 1.3,
-          y: (dir.y / len) * 2 + 0.2,
+          y: (dir.y / len) * 2 + 0.3,
           z: (dir.z / len) * 1.3,
         });
       });
@@ -291,22 +306,25 @@ if (Settings.auto) {
 
       const protect = player.getDynamicProperty("meow_protect") ?? Boolean(Settings.protect);
       const replace = player.getDynamicProperty("meow_replace") ?? Boolean(Settings.replace);
+      const compulsoryAuto = player.getDynamicProperty("meow_compulsoryAuto") ?? Boolean(Settings.compulsory_auto);
 
       mc.system.run(() => new ModalFormData()
         .title(meow.getLocalizedText("setting_title", lang))
         .dropdown(meow.getLocalizedText("setting_language", lang), ["默认 Default", "简体中文", "繁體中文", "English"], langIndex)
         .toggle(meow.getLocalizedText("setting_protect", lang), protect)
         .toggle(meow.getLocalizedText("setting_replace", lang), replace)
+        .toggle(meow.getLocalizedText("setting_compulsoryAuto", lang), compulsoryAuto)
         .show(player)
         .then(result => {
           if (result.canceled) return;
           player.setDynamicProperty("meow_language", langOptions[result.formValues[0]]);
           player.setDynamicProperty("meow_protect", result.formValues[1]);
           player.setDynamicProperty("meow_replace", result.formValues[2]);
+          player.setDynamicProperty("meow_compulsoryAuto", result.formValues[3]);
         })
       )
     });
   }).catch(err => {
-    console.error("[MeowFish] Failed to load lib:", err);
+    console.error("[§3MeowFish§r] [§4error§r] Failed to load lib (自动钓鱼加载失败):", err);
   });
 }

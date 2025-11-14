@@ -86,7 +86,8 @@ class FishingEventManager {
     if (
       !block ||
       (block.typeId !== "minecraft:water" &&
-        block.typeId !== "minecraft:flowing_water")
+        block.typeId !== "minecraft:flowing_water" &&
+        !block.isWaterlogged)
     ) {
       return false;
     }
@@ -95,8 +96,8 @@ class FishingEventManager {
     if (
       !aboveBlock ||
       (aboveBlock.typeId !== "minecraft:air" &&
-        aboveBlock.typeId !== "minecraft:cave_air" &&
-        hook.getVelocity().y > -0.01)
+        aboveBlock.typeId !== "minecraft:waterlily") ||
+      hook.getVelocity().y > -0.01
     ) {
       return false;
     }
@@ -136,7 +137,7 @@ class FishingEventManager {
       }
     });
     world.afterEvents.itemUse.subscribe(event => {
-      if (event.itemStack.typeId !== "minecraft:fishing_rod") return;
+      if (event.itemStack.typeId !== "minecraft:fishing_rod" || !event.source?.name) return;
       if (this.#fishend.has(event.source)) {
         const v = this.#fishend.get(event.source);
         system.clearRun(v.runId);
@@ -158,9 +159,9 @@ class FishingEventManager {
 
     // 监听实体生成事件（确认抛杆）
     world.afterEvents.entitySpawn.subscribe(event => {
-      if (event.entity.typeId !== "minecraft:fishing_hook") return;
+      if (event.entity?.typeId !== "minecraft:fishing_hook") return;
       system.runTimeout(() => {
-        if (!event.entity.isValid()) return;
+        if (!event.entity?.isValid()) return;
         // 延迟0，使该事件排在itemUse后，确保#mfishingPlayers写入
         let player;
         this.#mfishingPlayers.forEach((t, p) => {
@@ -170,11 +171,11 @@ class FishingEventManager {
               Vector3.subtract(
                 Vector3.add(
                   Vector3.lerp(p.location, p.getHeadLocation(), 0.8),
-                  Vector3.scl(p.getViewDirection(), 1.5)
+                  Vector3.scl(p.getViewDirection(), 1.3)
                 ),
                 p.getVelocity()
               )
-            ) < 1.2 &&
+            ) < 1.3 &&
             Date.now() - t < 100
           ) {
             player = p;

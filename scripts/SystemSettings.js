@@ -63,6 +63,24 @@ const Settings = {
   ,
 
 
+  //强制自动钓鱼
+  // Compulsory auto-fishing
+
+  compulsory_auto: 0
+  /*
+    可填入"0"和"1"，
+    "0"代表"不强制"，
+    "1"代表"强制"。
+    启用之后，无论是否下蹲，都会触发自动钓鱼。
+
+    Can fill in "0" and "1",
+    "0" means "not compulsory",
+    "1" means "compulsory".
+    After enabling, regardless of whether you are crouching, automatic fishing will be triggered.
+  */
+  ,
+
+
   //默认语言
   // Default language
 

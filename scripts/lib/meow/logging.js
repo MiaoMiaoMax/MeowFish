@@ -10,7 +10,7 @@ import { world } from "@minecraft/server";
 import { Settings } from "../../SystemSettings";
 
 // 信息发送前缀
-const PREFIX = "[§3MeowHouseModule§r] ";
+const PREFIX = "[§3MeowFish§r] ";
 
 /**
  * 将任意参数数组转换为可安全显示的字符串数组。
