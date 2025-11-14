@@ -68,7 +68,7 @@ if (Settings.auto) {
     const isCreative = player => player.getGameMode() === mc.GameMode.creative;
 
     const shouldProtectRod = (durability, mendingLevel) =>
-      durability?.damage >= (durability.maxDurability - 1) && mendingLevel < 1;
+      durability.damage >= (durability.maxDurability - 1) && mendingLevel < 1;
 
     const handleMending = (xp, durability) => {
       const damage = durability.damage - xp * 2;
@@ -187,7 +187,6 @@ if (Settings.auto) {
       let messageSuffix = "";
       let needReplace = false;
       let yesReplace = false;
-      let stop = false;
 
       if (isInCreative) {
         messageSuffix = meow.getLocalizedText("creative_mode", lang);
@@ -215,7 +214,7 @@ if (Settings.auto) {
       if (needReplace) {
         if (!replaceFishingRod(player, item)) {
           messageSuffix = meow.getLocalizedText("rod_replaced_failed", lang);
-          if (protect) stop = true;
+          if (protect) mc.system.runTimeout(() => equippable.setEquipment(mc.EquipmentSlot.Mainhand, item), 1);
           else mc.system.runTimeout(() => equippable.setEquipment(mc.EquipmentSlot.Mainhand), 1);
         } else yesReplace = true;
       } else if (!isInCreative) {
@@ -234,7 +233,6 @@ if (Settings.auto) {
       showXpMessage(player, lang, xp, messageSuffix);
 
       // 声音与粒子
-      meow.runCommand(player, "playsound random.orb @a ^^^1 0.2 0.5");
       if (yesReplace) meow.runCommand(player, "playsound mob.villager.yes @a ^^^1 0.7");
       else if (replace && needReplace) {
         if (isBroken) meow.runCommand(player, "playsound random.break @a ^^^1 0.7");
@@ -242,7 +240,7 @@ if (Settings.auto) {
       }
       else if (isBroken) meow.runCommand(player, "playsound random.break @a ^^^1 0.7");
 
-      if (stop) return;
+      meow.runCommand(player, "playsound random.orb @a ^^^1 0.2 0.5");
       // 经验与战利品
       player.addExperience(xp);
       const loc = meow.Vector3.floor(event.hook.location);
