@@ -1,6 +1,7 @@
 ![项目图标](./pack_icon.png)
 
 # MeowFish
+_我的世界基岩版自动钓鱼 Minecraft Bedrock Auto Fishing_
 > Only Chinese versions available. (This sentence is machine-translated)
 
 ## 当前版本
