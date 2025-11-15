@@ -4,7 +4,7 @@
 > Only Chinese versions available. (This sentence is machine-translated)
 
 ## 当前版本
-v0.1.2-beta
+v0.1.3-beta
 
 ## 使用方法
 持有钓鱼竿，下蹲抛竿即可触发。
@@ -17,6 +17,8 @@ v0.1.2-beta
 - 强制自动：无论是否下蹲都会触发自动钓鱼
 - 耐久保护：保护钓鱼竿耐久（留1点耐久）
 - 替换：搜索背包替换当前钓鱼竿（如果当前钓鱼竿没耐久）
+- 减少下沉：钓鱼钩下沉幅度将会减少。（减少了鱼钩上浮时间（鱼钩后摇时间），也许会缩短咬钩间隔）
+- 强制获取丛林群系钓鱼战利品：强制获取丛林生物群系的特殊钓鱼战利品（需在 `SystemSettings.js` 中将 `allow_jungle_loot` 设置为 `1` 显示该设置，`allow_jungle_loot` 默认为 `0` 即禁用并隐藏）
 
 在 `行为包\scripts\` 目录的 [SystemSettings.js](./scripts/SystemSettings.js) 文件里全部功能的默认设置， 设置之后只需要使用 `/reload` 命令即可刷新
 

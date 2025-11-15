@@ -128,6 +128,11 @@ export interface HookOnWaterSurfaceChangeEvent {
   hook: Entity;
   
   /**
+   * 玩家
+   */
+  player: Player;
+  
+  /**
    * 是否首次触发
    */
   isFirst: boolean;

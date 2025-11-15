@@ -287,6 +287,7 @@ class FishingEventManager {
           this.hookOnWaterSurfaceChange.trigger(
             Object.freeze({
               hook: v.hook,
+              player: p,
               isFirst: true,
               isOnWater: true,
             })
@@ -304,6 +305,7 @@ class FishingEventManager {
           this.hookOnWaterSurfaceChange.trigger(
             Object.freeze({
               hook: v.hook,
+              player: p,
               isFirst: false,
               isOnWater: currentStatus,
             })

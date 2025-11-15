@@ -63,6 +63,25 @@ const Settings = {
   ,
 
 
+  //温馨提示
+  // Warming tip
+
+  tip: 1
+
+  /*
+    可填入"0"和"1"，
+    "0"代表"不显示"，
+    "1"代表"显示"。
+    启用之后，将在玩家进入游戏之后显示一个温馨提示。
+    
+    Can fill in "0" and "1",
+    "0" means "do not show",
+    "1" means "show".
+    After enabling, a warm tip will be displayed after the player enters the game.
+  */
+  ,
+
+
   //强制自动钓鱼
   // Compulsory auto-fishing
 
@@ -84,19 +103,19 @@ const Settings = {
   //默认语言
   // Default language
 
-  language: "zh_CN"
+  language: "en_US"
   /*
-    可填入"zh_CN", "zh_TW", "en-US"
+    可填入"zh_CN", "zh_TW", "en_US"
 
     zh_CN 代表 简体中文
     zh_TW 代表 繁體中文
-    en-US 代表 英文
+    en_US 代表 英文
     
-    Can fill in "zh_CN", "zh_TW", "en-US"
+    Can fill in "zh_CN", "zh_TW", "en_US"
 
     zh_CN represents Simplified Chinese
     zh_TW represents Traditional Chinese
-    en-US represents English
+    en_US represents English
   */
   ,
 
@@ -133,6 +152,46 @@ const Settings = {
     Can fill in "0" and "1",
     "0" means "do not replace",
     "1" means "replace".
+  */
+  ,
+
+
+  //减少鱼钩下沉
+  // Reduce hook sinking
+
+  reduce_sinking: 0
+
+  /*
+    可填入"0"和"1"，
+    "0"代表"不减少下沉"，
+    "1"代表"减少下沉"。
+    启用之后，钓鱼钩下沉幅度将会减少。
+    减少了鱼钩上浮时间（鱼钩后摇时间），也许会缩短咬钩间隔。
+    
+    Can fill in "0" and "1",
+    "0" means "don't reduce sinking",
+    "1" means "reduce sinking".
+    After enabling, the fishing hook sinking amplitude will be reduced.
+    Reduced floating time (hook backswing time), maybe shorten the interval between bite.
+  */
+  ,
+
+
+  // 是否允许玩家强制获取丛林群系钓鱼战利品
+  // Whether players are allowed to forcefully obtain loot from the jungle biome
+
+  allow_jungle_loot: 1
+
+  /*
+    可填入"0"和"1"，
+    "0"代表"不允许"，
+    "1"代表"允许"。
+    启用之后，玩家将能够自行设置是否强制获取丛林群系钓鱼战利品。
+    
+    Can fill in "0" and "1",
+    "0" means "not allowed",
+    "1" means "allowed".
+    After enabling, players will be able to set whether to forcefully obtain loot from the jungle biome themselves.
   */
   ,
 
