@@ -21,12 +21,12 @@ v0.1.3-beta
 - 减少下沉：钓鱼钩下沉幅度将会减少。（减少了鱼钩上浮时间（鱼钩后摇时间），也许会缩短咬钩间隔）
 - 强制获取丛林群系钓鱼战利品：强制获取丛林生物群系的特殊钓鱼战利品（需在 `SystemSettings.js` 中将 `allow_jungle_loot` 设置为 `1` 显示该设置，`allow_jungle_loot` 默认为 `0` 即禁用并隐藏）
 
-在 `行为包\scripts\` 目录的 [SystemSettings.js](./scripts/SystemSettings.js) 文件里全部功能的默认设置， 设置之后只需要使用 `/reload` 命令即可刷新
+在 `行为包\scripts\` 目录的 [SystemSettings.js](./scripts/SystemSettings.js) 文件里有全部功能的默认设置，设置之后只需要使用 `/reload` 命令即可刷新
 
 ## 游戏版本
 适配游戏版本为 1.21.0 或 以上
 
-***! 在 1.21.70 或更高版本可兼容成就 !***
+**_! 在 1.21.70 或更高版本可兼容成就 !_**
 
 ## 其他
 目前为beta测试，如果遇到问题，欢迎反馈
