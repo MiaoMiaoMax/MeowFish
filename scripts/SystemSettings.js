@@ -180,7 +180,7 @@ const Settings = {
   // 是否允许玩家强制获取丛林群系钓鱼战利品
   // Whether players are allowed to forcefully obtain loot from the jungle biome
 
-  allow_jungle_loot: 1
+  allow_jungle_loot: 0
 
   /*
     可填入"0"和"1"，
