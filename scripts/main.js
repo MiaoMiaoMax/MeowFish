@@ -195,7 +195,7 @@ if (Settings.auto) {
       if (!durability) return meow.error("Failed to get fishing rod durability (无法获取鱼竿耐久)");
       const enchant = item.getComponent("minecraft:enchantable");
       const mending = enchant?.getEnchantment("mending")?.level ?? 0;
-      const luck = enchant?.getEnchantment("luck_of_the_sea")?.level ?? 0;
+      const luck = Math.min(enchant?.getEnchantment("luck_of_the_sea")?.level ?? 0, 3);
       const unbreaking = enchant?.getEnchantment("unbreaking")?.level ?? 0;
 
       // 耐久保护检查（仅生存模式）
