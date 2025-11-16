@@ -46,7 +46,7 @@ const Settings = {
   */
 
 
-  //自动钓鱼开关
+  // 自动钓鱼开关
   // Auto fishing switch
 
   auto: 1
@@ -63,8 +63,8 @@ const Settings = {
   ,
 
 
-  //温馨提示
-  // Warming tip
+  // 温馨提示
+  // Friendly reminder
 
   tip: 1
 
@@ -73,16 +73,18 @@ const Settings = {
     "0"代表"不显示"，
     "1"代表"显示"。
     启用之后，将在玩家进入游戏之后显示一个温馨提示。
+    有玩家的自动钓鱼的个人设置信息，和自动钓鱼的使用方法。
     
     Can fill in "0" and "1",
     "0" means "do not show",
     "1" means "show".
     After enabling, a warm tip will be displayed after the player enters the game.
+    It displays each player’s personal auto-fishing settings and instructions on how to use the feature.
   */
   ,
 
 
-  //强制自动钓鱼
+  // 强制自动钓鱼
   // Compulsory auto-fishing
 
   compulsory_auto: 0
@@ -100,7 +102,7 @@ const Settings = {
   ,
 
 
-  //默认语言
+  // 默认语言
   // Default language
 
   language: "en_US"
@@ -120,7 +122,7 @@ const Settings = {
   ,
 
 
-  //默认是否保护钓鱼竿耐久（留1点耐久）
+  // 默认是否保护钓鱼竿耐久（留1点耐久）
   // Whether to protect fishing rod durability by default (leave 1 point durability)
   // Protect fishing rod durability by default (keep 1 durability point)
 
@@ -138,7 +140,7 @@ const Settings = {
   ,
 
 
-  //默认是否搜索背包替换当前钓鱼竿（如果当前钓鱼竿没耐久）
+  // 默认是否搜索背包替换当前钓鱼竿（如果当前钓鱼竿没耐久）
   // Whether to search inventory to replace current fishing rod by default (if current fishing rod has no durability)
   // Search inventory for replacement fishing rod when current one has no durability
 
@@ -156,7 +158,7 @@ const Settings = {
   ,
 
 
-  //减少鱼钩下沉
+  // 减少鱼钩下沉
   // Reduce hook sinking
 
   reduce_sinking: 0
@@ -172,7 +174,7 @@ const Settings = {
     "0" means "don't reduce sinking",
     "1" means "reduce sinking".
     After enabling, the fishing hook sinking amplitude will be reduced.
-    Reduced floating time (hook backswing time), maybe shorten the interval between bite.
+    This reduces the hook’s floating time (i.e., recovery time after casting), which may shorten the interval between bites.
   */
   ,
 
@@ -191,7 +193,7 @@ const Settings = {
     Can fill in "0" and "1",
     "0" means "not allowed",
     "1" means "allowed".
-    After enabling, players will be able to set whether to forcefully obtain loot from the jungle biome themselves.
+    When enabled, players can choose whether to force-enable jungle biome fishing loot.
   */
   ,
 

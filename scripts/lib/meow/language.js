@@ -48,12 +48,12 @@ const translations = {
   tip_setting: {
     zh_CN: "用纸张命名为 MF设置 使用即可打开个人设置。\n",
     zh_TW: "用紙張命名為 MF設置 使用即可打開個人設置。\n",
-    en_US: "Use paper named 'MFSetting' to open personal settings.\n",
+    en_US: "Use a paper named 'MFSetting' to open your personal settings.\n",
   },
   auto_fish: {
-    zh_CN: "[§3MeowFish§r -> §3你§r] 本次钓鱼已启用自动钓鱼",
-    zh_TW: "[§3MeowFish§r -> §3你§r] 本次釣魚已啟用自動釣魚",
-    en_US: "[§3MeowFish§r -> §3You§r] This fishing has been enabled automatically",
+    zh_CN: "[§3MeowFish§r -> §3你§r] 本次钓鱼已启用自动钓鱼。",
+    zh_TW: "[§3MeowFish§r -> §3你§r] 本次釣魚已啟用自動釣魚。",
+    en_US: "[§3MeowFish§r -> §3You§r] Auto-fishing is now active for this session.",
   },
   gain_xp: {
     zh_CN: "获得§b{xp}经验§r, ",
@@ -66,9 +66,9 @@ const translations = {
     en_US: "Fishing rod durability: {current}/{max}",
   },
   rod_durability_warning: {
-    zh_CN: "[§3MeowFish§r -> §3你§r] 钓鱼竿没有耐久啦",
-    zh_TW: "[§3MeowFish§r -> §3你§r] 釣魚竿沒有耐久啦",
-    en_US: "[§3MeowFish§r -> §3You§r] Fishing rod is out of durability",
+    zh_CN: "[§3MeowFish§r -> §3你§r] 钓鱼竿没有耐久啦。",
+    zh_TW: "[§3MeowFish§r -> §3你§r] 釣魚竿沒有耐久啦。",
+    en_US: "[§3MeowFish§r -> §3You§r] Fishing rod is out of durability.",
   },
   rod_about_to_replace: {
     zh_CN: "钓鱼竿耐久: {current}/{max} 即将替换",
@@ -106,9 +106,9 @@ const translations = {
     en_US: "MeowFish Personal Settings",
   },
   setting_language: {
-    zh_CN: "语言(Language): ",
-    zh_TW: "語言(Language): ",
-    en_US: "Language(语言): ",
+    zh_CN: "语言 (Language): ",
+    zh_TW: "語言 (Language): ",
+    en_US: "Language (语言): ",
   },
   setting_protect: {
     zh_CN: "保护钓鱼竿耐久（留1点耐久）\n\n",
@@ -133,12 +133,12 @@ const translations = {
   setting_tip: {
     zh_CN: "温馨提示（进入游戏时的提示）\n\n",
     zh_TW: "温馨提示（進入遊戲時的提示）\n\n",
-    en_US: "Warm tips (Tips when entering the game)\n\n",
+    en_US: "Friendly reminder (shown when entering the game)\n\n",
   },
   setting_lootAtPlayerLoc: {
     zh_CN: "战利品在生成到玩家位置\n（直接在脚下生成）\n\n",
     zh_TW: "戰利品在生成到玩家位置\n（直接在脚下生成）\n\n",
-    en_US: "Loot at player location\n(Generated directly at the foot)\n\n",
+    en_US: "Loot spawns at player location\n(Generated directly at your feet)\n\n",
   },
   setting_jungleLoot: {
     zh_CN: "是否强制获取丛林群系钓鱼战利品\n（比普通战利品多了竹子等的小东西）\n\n",
