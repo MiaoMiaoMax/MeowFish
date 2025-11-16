@@ -135,6 +135,11 @@ const translations = {
     zh_TW: "温馨提示（進入遊戲時的提示）\n\n",
     en_US: "Warm tips (Tips when entering the game)\n\n",
   },
+  setting_lootAtPlayerLoc: {
+    zh_CN: "战利品在生成到玩家位置\n（直接在脚下生成）\n\n",
+    zh_TW: "戰利品在生成到玩家位置\n（直接在脚下生成）\n\n",
+    en_US: "Loot at player location\n(Generated directly at the foot)\n\n",
+  },
   setting_jungleLoot: {
     zh_CN: "是否强制获取丛林群系钓鱼战利品\n（比普通战利品多了竹子等的小东西）\n\n",
     zh_TW: "是否強制獲取丛林群系釣魚戰利品\n（比普通戰利品多了竹子等的小東西）\n\n",

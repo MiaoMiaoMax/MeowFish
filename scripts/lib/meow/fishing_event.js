@@ -60,7 +60,7 @@ class FishingEventManager {
 
   /**
    * 钓鱼信息
-   * @type {Map<import("@minecraft/server").Player, {hook: import("@minecraft/server").Entity, hookLoc: import("@minecraft/server").Vector3, isStable: boolean, isFishing: boolean | null, isSinking: boolean, lastSinkingCheck: number | null, isOnWater: boolean, isOnWaterFirst: number | null }>}
+   * @type {Map<import("@minecraft/server").Player, {hook: import("@minecraft/server").Entity, hookLoc: import("@minecraft/server").Vector3, isStable: boolean, isFishing: boolean | null, isSinking: boolean, lastSinkingCheck: number | null, isOnWater: boolean, isInWater: boolean, isOnWaterFirst: number | null }>}
    */
   #fishing = new Map();
 
@@ -74,9 +74,8 @@ class FishingEventManager {
   }
 
   /**
-   * 检查鱼钩是否在水面上
+   * 检查鱼钩是否在水面上或在水中
    * @param {import("@minecraft/server").Entity} hook - 鱼钩实体
-   * @returns {boolean} 如果鱼钩在水面上返回true，否则返回false
    */
   isHookOnWaterSurface(hook) {
     const location = hook.location;
@@ -89,20 +88,19 @@ class FishingEventManager {
         block.typeId !== "minecraft:flowing_water" &&
         !block.isWaterlogged)
     ) {
-      return false;
+      return ({ isOnWater: false, isInWater: false });
     }
-    // 检查鱼钩上方是否是空气（确保在水面）
+    // 检查鱼钩上方是否是空气
     const aboveBlock = block.above(1);
     if (
       !aboveBlock ||
-      (aboveBlock.typeId !== "minecraft:air" &&
-        aboveBlock.typeId !== "minecraft:waterlily") ||
-      hook.getVelocity().y > -0.01
+      aboveBlock.typeId === "minecraft:water" ||
+      aboveBlock.typeId === "minecraft:flowing_water"
     ) {
-      return false;
+      return ({ isOnWater: false, isInWater: true });
     }
 
-    return true;
+    return ({ isOnWater: true, isInWater: false });
   }
 
   /**
@@ -192,6 +190,7 @@ class FishingEventManager {
           isSinking: false,
           lastSinkingCheck: null,
           isOnWater: false,
+          isInWater: false,
           isOnWaterFirst: null,
         });
         this.castRod.trigger(
@@ -218,7 +217,7 @@ class FishingEventManager {
               isActive: false,
               isFishing: v.isFishing,
               isSinking: v.isSinking,
-              isOnWater: w,
+              ...w,
             })
           );
           this.#fishend.delete(p);
@@ -227,7 +226,7 @@ class FishingEventManager {
           hookId: v.hook.id,
           isFishing: v.isFishing,
           isSinking: v.isSinking,
-          isOnWater: w,
+          ...w,
           runId: r,
         });
         this.#fishing.delete(p);
@@ -270,6 +269,7 @@ class FishingEventManager {
         if (!v.isStable) {
           if (
             Math.abs(v.hook.location.x - v.hookLoc.x) < 0.0001 &&
+            Math.abs(v.hook.location.y - v.hookLoc.y) < 0.1 &&
             Math.abs(v.hook.location.z - v.hookLoc.z) < 0.0001
           ) {
             this.#fishing.set(p, { ...v, isStable: true });
@@ -279,11 +279,13 @@ class FishingEventManager {
         }
 
         if (v.isStable && v.isFishing === null) {
-          if (!currentStatus)
-            return this.#fishing.set(p, {
+          if (!currentStatus.isOnWater) {
+            if (!currentStatus.isInWater) this.#fishing.set(p, {
               ...v,
               isFishing: false,
             });
+            return;
+          }
           this.hookOnWaterSurfaceChange.trigger(
             Object.freeze({
               hook: v.hook,
@@ -301,16 +303,16 @@ class FishingEventManager {
         }
 
         // 水面状态改变
-        if (v.isFishing && currentStatus !== v.isOnWater) {
+        if (v.isFishing && currentStatus.isOnWater !== v.isOnWater) {
           this.hookOnWaterSurfaceChange.trigger(
             Object.freeze({
               hook: v.hook,
               player: p,
               isFirst: false,
-              isOnWater: currentStatus,
+              ...currentStatus,
             })
           );
-          this.#fishing.set(p, { ...v, isOnWater: currentStatus });
+          this.#fishing.set(p, { ...v, ...currentStatus });
         }
 
         // 鱼咬钩检测

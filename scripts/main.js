@@ -163,7 +163,14 @@ if (Settings.auto) {
       meow.Events.fishing.hookHitEntity,
       mc.world.beforeEvents.playerLeave
     ].forEach(evt =>
-      evt.subscribe(e => AutoFish.delete(e.player.id))
+      evt.subscribe(e => {
+        if (!AutoFish.has(e.player.id)) return;
+        AutoFish.delete(e.player.id);
+        if (HookTp.has(e.player.id)) {
+          mc.system.clearRun(HookTp.get(e.player.id));
+          HookTp.delete(e.player.id);
+        }
+      })
     );
 
     // —————— 核心：鱼咬钩处理 ——————
@@ -181,6 +188,7 @@ if (Settings.auto) {
       const replace = player.getDynamicProperty("meow_replace") ?? Boolean(Settings.replace);
       const reduceSinking = player.getDynamicProperty("meow_reduceSinking") ?? Boolean(Settings.reduce_sinking);
       const jungleLoot = player.getDynamicProperty("meow_jungleLoot") ?? false;
+      const lootAtPlayerLoc = player.getDynamicProperty("meow_lootAtPlayerLoc") ?? false;
       const isInCreative = isCreative(player);
 
       const durability = item.getComponent("minecraft:durability");
@@ -199,6 +207,7 @@ if (Settings.auto) {
         // 减少鱼钩下沉
         const locH = meow.Vector3.copy(event.hook.location);
         const r = mc.system.runInterval(() => {
+          if (!event.hook?.isValid()) return;
           event.hook.teleport(locH);
           event.hook.clearVelocity();
         }, 1);
@@ -294,15 +303,26 @@ if (Settings.auto) {
       meow.runCommand(player, "playsound random.orb @a ^^^1 0.2 0.5");
       // 经验与战利品
       player.addExperience(xp);
-      const locL = meow.Vector3.floor(event.hook.location);
-      meow.runCommand(player, `loot spawn ${locL.x} ${locL.y} ${locL.z} loot "gameplay/fishing/${lootType}"`);
 
-      // 记录战利品位置用于吸附
-      FishLoot.set(player.id, {
-        lootLoc: locL,
-        hookLoc: meow.Vector3.add(event.hook.location, 0, 0.5, 0),
-        time: Date.now(),
-      });
+      if (lootAtPlayerLoc) {
+        const locP = meow.Vector3.floor(player.location);
+        meow.runCommand(player, `loot spawn ${locP.x} ${locP.y} ${locP.z} loot "gameplay/fishing/${lootType}"`);
+        FishLoot.set(player.id, {
+          lootLoc: locP,
+          tpLoc: meow.Vector3.add(player.location, 0, 0.1, 0),
+          time: Date.now(),
+          lootAtPlayerLoc: true,
+        })
+      } else {
+        const locL = meow.Vector3.floor(event.hook.location);
+        meow.runCommand(player, `loot spawn ${locL.x} ${locL.y} ${locL.z} loot "gameplay/fishing/${lootType}"`);
+        FishLoot.set(player.id, {
+          lootLoc: locL,
+          tpLoc: meow.Vector3.add(event.hook.location, 0, 0.5, 0),
+          time: Date.now(),
+          lootAtPlayerLoc: false,
+        });
+      }
 
       meow.runCommand(
         player,
@@ -315,7 +335,7 @@ if (Settings.auto) {
     mc.world.afterEvents.entitySpawn.subscribe(event => {
       if (event.entity.typeId !== "minecraft:item") return;
 
-      FishLoot.forEach(({ lootLoc, hookLoc, time }, playerId) => {
+      FishLoot.forEach(({ lootLoc, tpLoc, time, lootAtPlayerLoc }, playerId) => {
         if (Date.now() - time > 2000) return FishLoot.delete(playerId);
         const player = mc.world.getEntity(playerId);
         if (!player || Date.now() - time > 1000) return;
@@ -323,7 +343,8 @@ if (Settings.auto) {
         const dist = meow.Vector3.distance(event.entity.location, lootLoc);
         if (dist > 0.1) return;
 
-        event.entity.teleport(hookLoc);
+        event.entity.teleport(tpLoc);
+        if (lootAtPlayerLoc) return FishLoot.delete(playerId);
         const dir = meow.Vector3.subtract(player.location, event.entity.location);
         const len = Math.sqrt(dir.x**2 + dir.y**2 + dir.z**2) || 1;
         event.entity.applyImpulse({
@@ -365,9 +386,11 @@ if (Settings.auto) {
       const reduceSinking =
         player.getDynamicProperty("meow_reduceSinking") ??
         Boolean(Settings.reduce_sinking);
-      const jungleLoot = player.getDynamicProperty("meow_jungleLoot") ?? false;
       const tip =
         player.getDynamicProperty("meow_tip") ?? Boolean(Settings.tip);
+      const lootAtPlayerLoc =
+        player.getDynamicProperty("meow_lootAtPlayerLoc") ?? false;
+      const jungleLoot = player.getDynamicProperty("meow_jungleLoot") ?? false;
 
       mc.system.run(() => {
         const form = new ModalFormData()
@@ -393,7 +416,11 @@ if (Settings.auto) {
             meow.getLocalizedText("setting_reduceSinking", lang),
             reduceSinking
           )
-          .toggle(meow.getLocalizedText("setting_tip", lang), tip);
+          .toggle(meow.getLocalizedText("setting_tip", lang), tip)
+          .toggle(
+            meow.getLocalizedText("setting_lootAtPlayerLoc", lang),
+            lootAtPlayerLoc
+          );
         if (Settings.allow_jungle_loot)
           form.toggle(
             meow.getLocalizedText("setting_jungleLoot", lang),
@@ -413,6 +440,12 @@ if (Settings.auto) {
           );
           player.setDynamicProperty("meow_reduceSinking", result.formValues[4]);
           player.setDynamicProperty("meow_tip", result.formValues[5]);
+          player.setDynamicProperty("meow_lootAtPlayerLoc", result.formValues[6])
+          let i = 7;
+          if (Settings.allow_jungle_loot) {
+            player.setDynamicProperty("meow_jungleLoot", result.formValues[i]);
+            i++;
+          }
         });
       });
     });

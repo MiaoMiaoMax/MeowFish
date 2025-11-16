@@ -78,6 +78,11 @@ export interface BeforeReelRodEvent {
   isOnWater: boolean;
   
   /**
+   * 是否在水里
+   */
+  isInWater: boolean;
+  
+  /**
    * 首次在水面上的时间
    */
   isOnWaterFirst: number | null;
@@ -116,6 +121,11 @@ export interface ReelRodEvent {
    * 是否在水面上
    */
   isOnWater: boolean;
+
+  /**
+   * 是否在水里
+   */
+  isInWater: boolean;
 }
 
 /**
@@ -141,6 +151,11 @@ export interface HookOnWaterSurfaceChangeEvent {
    * 是否在水面上
    */
   isOnWater: boolean;
+  
+  /**
+   * 是否在水里
+   */
+  isInWater: boolean;
 }
 
 /**
