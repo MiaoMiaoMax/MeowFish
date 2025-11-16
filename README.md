@@ -5,7 +5,7 @@ _我的世界基岩版自动钓鱼 Minecraft Bedrock Auto Fishing_
 > Only Chinese versions available. (This sentence is machine-translated)
 
 ## 当前版本
-v0.1.3-beta
+v0.1.4-beta
 
 ## 使用方法
 持有钓鱼竿，下蹲抛竿即可触发。
@@ -19,9 +19,11 @@ v0.1.3-beta
 - 耐久保护：保护钓鱼竿耐久（留1点耐久）
 - 替换：搜索背包替换当前钓鱼竿（如果当前钓鱼竿没耐久）
 - 减少下沉：钓鱼钩下沉幅度将会减少。（减少了鱼钩上浮时间（鱼钩后摇时间），也许会缩短咬钩间隔）
+- 温馨提示：将在玩家进入游戏之后显示一个温馨提示。（有玩家的自动钓鱼的个人设置信息，和自动钓鱼的使用方法）
+- 战利品在生成到玩家位置：直接在脚下生成
 - 强制获取丛林群系钓鱼战利品：强制获取丛林生物群系的特殊钓鱼战利品（需在 `SystemSettings.js` 中将 `allow_jungle_loot` 设置为 `1` 显示该设置，`allow_jungle_loot` 默认为 `0` 即禁用并隐藏）
 
-在 `行为包\scripts\` 目录的 [SystemSettings.js](./scripts/SystemSettings.js) 文件里有全部功能的默认设置，设置之后只需要使用 `/reload` 命令即可刷新
+在 `行为包\scripts\` 目录的 [SystemSettings.js](./scripts/SystemSettings.js) 文件里有大部分功能的默认设置，设置之后只需要使用 `/reload` 命令即可刷新
 
 ## 游戏版本
 适配游戏版本为 1.21.0 或 以上
@@ -29,6 +31,7 @@ v0.1.3-beta
 **_! 在 1.21.70 或更高版本可兼容成就 !_**
 
 ## 其他
+觉得项目有用的话，可以给个star好吗 QwQ  
 目前为beta测试，如果遇到问题，欢迎反馈
 
 > 你可以关注作者bilibli平台 [CNQuanYeCha](https://space.bilibili.com/1968985335) 的动态来获得相关消息
