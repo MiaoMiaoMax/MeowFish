@@ -1,9 +1,9 @@
 /*
-    本作品采用知识共享署名-非商业性-相同方式共享 4.0 国际许可协议进行许可。 要查看此许可证的副本，请访问
-    https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans
+  本作品采用知识共享署名-非商业性-相同方式共享 4.0 国际许可协议进行许可。 要查看此许可证的副本，请访问
+  https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans
 
-    This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. To view a copy of this license, visit
-    http://creativecommons.org/licenses/by-nc-sa/4.0/
+  This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. To view a copy of this license, visit
+  https://creativecommons.org/licenses/by-nc-sa/4.0/
 */
 
 import * as mc from "@minecraft/server";
@@ -25,6 +25,62 @@ export function runCommand(object, command, isReturn = false) {
     return { object: object, command: command, error: e, successCount: 0 }
   }
 }
+
+/**
+ * 指数衰减函数
+ * @param {number} x 输入值
+ * @param {number} k 衰减系数，默认0.1
+ * @returns {number} 衰减后的结果
+ */
+export const exponentialDecay = (x, k = 0.1) => Math.exp(-k * x);
+
+/**
+ * n次贝塞尔曲线插值
+ * @param {number} t 输入值，范围：[0,1]
+ * @param {Array<{t: number, value: number}>} points 插值点数组
+ * @returns {number} 插值结果
+ */
+export function nBezierInterpolation (t, points) {
+  // 如果只有一个点，直接返回该点的值
+  if (points.length === 1) return points[0].value;
+
+  // 如果只有两个点，使用线性插值
+  if (points.length === 2) {
+    const [p0, p1] = points;
+    // 线性插值公式: y = y0 + (y1-y0) * (t-t0)/(t1-t0)
+    if (p1.t === p0.t) return p0.value;
+    const ratio = (t - p0.t) / (p1.t - p0.t);
+    return p0.value + (p1.value - p0.value) * ratio;
+  }
+
+  // 对于多个点，使用de Casteljau算法计算n次贝塞尔曲线
+  // 首先复制点数组以避免修改原始数据
+  let tempPoints = points.map(point => point.value);
+
+  // 迭代计算直到只剩一个点
+  for (let i = 1; i < points.length; i++) {
+    for (let j = 0; j < points.length - i; j++) {
+      // 计算参数t在当前两点间的插值比例
+      const t0 = points[j].t;
+      const t1 = points[j + i].t;
+      let ratio;
+
+      // 避免除零错误
+      if (t1 === t0) {
+        ratio = 0;
+      } else {
+        // 将全局t映射到当前两点间的局部t
+        ratio = (t - t0) / (t1 - t0);
+        // 限制ratio在[0,1]范围内
+        ratio = Math.max(0, Math.min(1, ratio));
+      }
+
+      tempPoints[j] = tempPoints[j] * (1 - ratio) + tempPoints[j + 1] * ratio;
+    }
+  }
+
+  return tempPoints[0];
+};
 
 /**
  * 生成指定范围内的随机整数 [min, max]

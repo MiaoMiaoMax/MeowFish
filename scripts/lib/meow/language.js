@@ -1,14 +1,20 @@
 /*
-    本作品采用知识共享署名-非商业性-相同方式共享 4.0 国际许可协议进行许可。 要查看此许可证的副本，请访问
-    https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans
+  本作品采用知识共享署名-非商业性-相同方式共享 4.0 国际许可协议进行许可。 要查看此许可证的副本，请访问
+  https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans
 
-    This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. To view a copy of this license, visit
-    http://creativecommons.org/licenses/by-nc-sa/4.0/
+  This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. To view a copy of this license, visit
+  https://creativecommons.org/licenses/by-nc-sa/4.0/
 */
 
 import { Settings } from "../../SystemSettings";
 
-// 定义各种语言的文本映射
+const PREFIX_ZH = "[§3MeowFish§r -> §3你§r] ";
+const PREFIX_EN = "[§3MeowFish§r -> §3You§r] ";
+
+/**
+ * 定义各种语言的文本映射
+ * @type {Object<string, Object<string, string>>}
+ */
 const translations = {
   lang: {
     zh_CN: "简体中文",
@@ -51,9 +57,14 @@ const translations = {
     en_US: "Use a paper named 'MFSetting' to open your personal settings.\n",
   },
   auto_fish: {
-    zh_CN: "[§3MeowFish§r -> §3你§r] 本次钓鱼已启用自动钓鱼。",
-    zh_TW: "[§3MeowFish§r -> §3你§r] 本次釣魚已啟用自動釣魚。",
-    en_US: "[§3MeowFish§r -> §3You§r] Auto-fishing is now active for this session.",
+    zh_CN: PREFIX_ZH + "本次抛竿已启用自动钓鱼。",
+    zh_TW: PREFIX_ZH + "本次抛竿已啟用自動釣魚。",
+    en_US: PREFIX_EN + "This cast has auto-fishing enabled.",
+  },
+  auto_fish_stop: {
+    zh_CN: PREFIX_ZH + "自动钓鱼结束。",
+    zh_TW: PREFIX_ZH + "自動釣魚結束。",
+    en_US: PREFIX_EN + "Auto-fishing stopped.",
   },
   gain_xp: {
     zh_CN: "获得§b{xp}经验§r, ",
@@ -66,9 +77,9 @@ const translations = {
     en_US: "Fishing rod durability: {current}/{max}",
   },
   rod_durability_warning: {
-    zh_CN: "[§3MeowFish§r -> §3你§r] 钓鱼竿没有耐久啦。",
-    zh_TW: "[§3MeowFish§r -> §3你§r] 釣魚竿沒有耐久啦。",
-    en_US: "[§3MeowFish§r -> §3You§r] Fishing rod is out of durability.",
+    zh_CN: PREFIX_ZH + "钓鱼竿没有耐久啦。",
+    zh_TW: PREFIX_ZH + "釣魚竿沒有耐久啦。",
+    en_US: PREFIX_EN + "Fishing rod is out of durability.",
   },
   rod_about_to_replace: {
     zh_CN: "钓鱼竿耐久: {current}/{max} 即将替换",
@@ -84,6 +95,11 @@ const translations = {
     zh_CN: "创造模式",
     zh_TW: "創造模式",
     en_US: "Creative mode",
+  },
+  fishing_machine_mode: {
+    zh_CN: "（钓鱼机模式）",
+    zh_TW: "（釣魚農場模式）",
+    en_US: "(Fishing farm Mode)",
   },
   rod_replaced_successfully: {
     zh_CN: "§a钓鱼竿替换成功",
@@ -104,6 +120,16 @@ const translations = {
     zh_CN: "MeowFish个人设置",
     zh_TW: "MeowFish個人設定",
     en_US: "MeowFish Personal Settings",
+  },
+  setting_saved: {
+    zh_CN: PREFIX_ZH + "保存成功！",
+    zh_TW: PREFIX_ZH + "保存成功！",
+    en_US: PREFIX_EN + "Saved successfully!",
+  },
+  setting_canceled: {
+    zh_CN: PREFIX_ZH + "已取消修改。",
+    zh_TW: PREFIX_ZH + "已取消修改。",
+    en_US: PREFIX_EN + "Canceled modification.",
   },
   setting_language: {
     zh_CN: "语言 (Language): ",
@@ -126,9 +152,9 @@ const translations = {
     en_US: "Compulsory auto-fishing (regardless of whether you are crouching)\n\n",
   },
   setting_reduceSinking: {
-    zh_CN: "减少鱼钩下沉幅度\n（减少了鱼钩上浮时间，也许会缩短咬钩间隔）\n\n",
-    zh_TW: "減少魚鉤下沉幅度\n（減少了魚鉤上浮時間，也許會縮短咬鉤間隔）\n\n",
-    en_US: "Reduce hook sinking amplitude\n(Reduces the floating time of the hook, which may shorten the bite interval)\n\n",
+    zh_CN: "减少鱼钩下沉幅度\n（防止下沉时勾到生物，如果勾到生物将会被取消钓鱼）\n\n",
+    zh_TW: "減少魚鉤下沉幅度\n（防止下沉時勾到生物，如果勾到生物將會被取消釣魚）\n\n",
+    en_US: "Reduce hook sinking depth\n(Prevents hooking mobs during descent; fishing will be canceled if a mob is hooked)\n\n",
   },
   setting_tip: {
     zh_CN: "温馨提示（进入游戏时的提示）\n\n",
@@ -136,8 +162,8 @@ const translations = {
     en_US: "Friendly reminder (shown when entering the game)\n\n",
   },
   setting_lootAtPlayerLoc: {
-    zh_CN: "战利品在生成到玩家位置\n（直接在脚下生成）\n\n",
-    zh_TW: "戰利品在生成到玩家位置\n（直接在脚下生成）\n\n",
+    zh_CN: "战利品将生成在玩家位置\n（直接在脚下生成）\n\n",
+    zh_TW: "戰利品將生成在玩家位置\n（直接在脚下生成）\n\n",
     en_US: "Loot spawns at player location\n(Generated directly at your feet)\n\n",
   },
   setting_jungleLoot: {
@@ -155,15 +181,41 @@ const translations = {
 export const language = ["zh_CN", "zh_TW", "en_US"];
 
 /**
+ * 预编译的正则表达式缓存
+ * 用于提高字符串替换性能
+ */
+const regexCache = new Map();
+
+// 预先定义常见的参数占位符
+const commonPlaceholders = ['xp', 'lang', 'current', 'max'];
+
+// 初始化常见占位符的正则表达式
+commonPlaceholders.forEach(placeholder => {
+  regexCache.set(placeholder, new RegExp(`{${placeholder}}`, "g"));
+});
+
+/**
+ * 获取或创建预编译的正则表达式
+ * @param {string} param - 参数名
+ * @returns {RegExp} 预编译的正则表达式
+ */
+function getRegexForParam(param) {
+  if (!regexCache.has(param)) {
+    regexCache.set(param, new RegExp(`{${param}}`, "g"));
+  }
+  return regexCache.get(param);
+}
+
+/**
  * 根据键名和当前语言设置获取本地化文本
  * @param {string} key - 文本键名
- * @param {string} language - 当前语言设置，默认为zh_CN
+ * @param {string} language - 当前语言设置，默认为en_US
  * @param {Object} params - 参数对象，用于替换文本中的占位符
  * @returns {string} 本地化后的文本
  */
 export function getLocalizedText(
   key,
-  language = Settings.language ?? "zh_CN",
+  language = Settings.language ?? "en_US",
   params = {}
 ) {
   // 获取对应键的文本映射
@@ -175,14 +227,15 @@ export function getLocalizedText(
   // 获取对应语言的文本
   let text = textMap[language];
   if (!text) {
-    // 如果没有对应语言的文本，回退到简体中文
+    // 如果没有对应语言的文本，回退到英文
     text =
-      textMap["zh_CN"] || `[Missing translation for language: ${language}]`;
+      textMap["en_US"] || `[Missing translation for language: ${language}]`;
   }
 
-  // 替换参数中的占位符
+  // 使用预编译的正则表达式替换参数中的占位符
   for (const param in params) {
-    text = text.replace(new RegExp(`{${param}}`, "g"), params[param]);
+    const regex = getRegexForParam(param);
+    text = text.replace(regex, params[param]);
   }
 
   return text;

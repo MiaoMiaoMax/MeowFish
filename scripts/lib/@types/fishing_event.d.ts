@@ -81,6 +81,11 @@ export interface BeforeReelRodEvent {
    * 是否在水里
    */
   isInWater: boolean;
+
+  /**
+   * 傍水模式
+   */
+  isBesideWater: boolean;
   
   /**
    * 首次在水面上的时间
@@ -126,6 +131,11 @@ export interface ReelRodEvent {
    * 是否在水里
    */
   isInWater: boolean;
+
+  /**
+   * 傍水模式
+   */
+  isBesideWater: boolean;
 }
 
 /**
@@ -156,6 +166,11 @@ export interface HookOnWaterSurfaceChangeEvent {
    * 是否在水里
    */
   isInWater: boolean;
+
+  /**
+   * 傍水模式
+   */
+  isBesideWater: boolean;
 }
 
 /**
@@ -191,6 +206,11 @@ export interface FishBiteEvent {
    * 玩家
    */
   player: Player;
+
+  /**
+   * 傍水模式
+   */
+  isBesideWater: boolean;
 }
 
 /**

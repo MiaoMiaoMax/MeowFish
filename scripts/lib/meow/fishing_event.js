@@ -1,9 +1,9 @@
 /*
-    本作品采用知识共享署名-非商业性-相同方式共享 4.0 国际许可协议进行许可。 要查看此许可证的副本，请访问
-    https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans
+  本作品采用知识共享署名-非商业性-相同方式共享 4.0 国际许可协议进行许可。 要查看此许可证的副本，请访问
+  https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans
 
-    This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. To view a copy of this license, visit
-    http://creativecommons.org/licenses/by-nc-sa/4.0/
+  This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. To view a copy of this license, visit
+  https://creativecommons.org/licenses/by-nc-sa/4.0/
 */
 
 import { system, world } from "@minecraft/server";
@@ -60,7 +60,7 @@ class FishingEventManager {
 
   /**
    * 钓鱼信息
-   * @type {Map<import("@minecraft/server").Player, {hook: import("@minecraft/server").Entity, hookLoc: import("@minecraft/server").Vector3, isStable: boolean, isFishing: boolean | null, isSinking: boolean, lastSinkingCheck: number | null, isOnWater: boolean, isInWater: boolean, isOnWaterFirst: number | null }>}
+   * @type {Map<import("@minecraft/server").Player, {hook: import("@minecraft/server").Entity, hookVY: number[], hookLoc: import("@minecraft/server").Vector3, isStable: boolean, isFishing: boolean | null, isSinking: boolean, lastSinkingCheck: number | null, isOnWater: boolean, isInWater: boolean, isBesideWater: boolean, isOnWaterFirst: number | null }>}
    */
   #fishing = new Map();
 
@@ -79,16 +79,62 @@ class FishingEventManager {
    */
   isHookOnWaterSurface(hook) {
     const location = hook.location;
+    const velocity = hook.getVelocity();
     const dimension = hook.dimension;
     // 检查鱼钩位置是否是水
     const block = dimension.getBlock(location);
+    let isBesideWater = false;
     if (
       !block ||
       (block.typeId !== "minecraft:water" &&
         block.typeId !== "minecraft:flowing_water" &&
         !block.isWaterlogged)
     ) {
-      return ({ isOnWater: false, isInWater: false });
+      const locX = hook.location.x;
+      const locZ = hook.location.z;
+      if (
+        Math.abs(velocity.x) < 0.1 &&
+        Math.abs(velocity.y) > 0.01 &&
+        Math.abs(velocity.z) < 0.1
+      ) {
+        
+        const checkBesideWater = (offsetX, offsetZ) => {
+          const beside = block.offset({ x: offsetX, y: 0, z: offsetZ });
+          return (
+            beside !== undefined &&
+            (beside.typeId === "minecraft:water" ||
+              beside.typeId === "minecraft:flowing_water" ||
+              beside.isWaterlogged)
+          );
+        };
+        // 对角线方向检查
+        if (locX >= block.x + 0.7 && locZ >= block.z + 0.7) {
+          isBesideWater = checkBesideWater(1, 1); // 东南
+        } else if (locX <= block.x + 0.3 && locZ >= block.z + 0.7) {
+          isBesideWater = checkBesideWater(-1, 1); // 西南
+        } else if (locX >= block.x + 0.7 && locZ <= block.z + 0.3) {
+          isBesideWater = checkBesideWater(1, -1); // 东北
+        } else if (locX <= block.x + 0.3 && locZ <= block.z + 0.3) {
+          isBesideWater = checkBesideWater(-1, -1); // 西北
+        }
+        if (!isBesideWater) {
+          const center = block.center();
+          // 正方向检查
+          if (!isBesideWater && locX > center.x) {
+            isBesideWater = checkBesideWater(1, 0); // 东
+          }
+          if (!isBesideWater && locX < center.x) {
+            isBesideWater = checkBesideWater(-1, 0); // 西
+          }
+          if (!isBesideWater && locZ > center.z) {
+            isBesideWater = checkBesideWater(0, 1); // 南
+          }
+          if (!isBesideWater && locZ < center.z) {
+            isBesideWater = checkBesideWater(0, -1); // 北
+          }
+        }
+      }
+      if (!isBesideWater) return ({ velocity, isOnWater: false, isInWater: false, isBesideWater: false });
     }
     // 检查鱼钩上方是否是空气
     const aboveBlock = block.above(1);
@@ -97,10 +143,10 @@ class FishingEventManager {
       aboveBlock.typeId === "minecraft:water" ||
       aboveBlock.typeId === "minecraft:flowing_water"
     ) {
-      return ({ isOnWater: false, isInWater: true });
+      return ({ velocity, isOnWater: false, isInWater: true, isBesideWater });
     }
 
-    return ({ isOnWater: true, isInWater: false });
+    return ({ velocity, isOnWater: true, isInWater: false, isBesideWater });
   }
 
   /**
@@ -153,6 +199,7 @@ class FishingEventManager {
         return;
       }
       this.#mfishingPlayers.set(event.source, Date.now());
+      // console.error("1");
     });
 
     // 监听实体生成事件（确认抛杆）
@@ -184,6 +231,7 @@ class FishingEventManager {
         this.#mfishingPlayers.delete(player);
         this.#fishing.set(player, {
           hook: event.entity,
+          hookVY: [event.entity.getVelocity().y],
           hookLoc: event.entity.location,
           isStable: false,
           isFishing: null,
@@ -191,6 +239,7 @@ class FishingEventManager {
           lastSinkingCheck: null,
           isOnWater: false,
           isInWater: false,
+          isBesideWater: false,
           isOnWaterFirst: null,
         });
         this.castRod.trigger(
@@ -257,33 +306,40 @@ class FishingEventManager {
           entity: event.hurtEntity,
         })
       );
-      this.#fishing.set(p, { ...v, isStable: true, isFishing: false });
+      v.isStable = true;
+      v.isFishing = false;
     });
 
     // 定期检查鱼钩状态
     system.runInterval(() => {
       this.#fishing.forEach((v, p) => {
-        if (!p?.isValid() || !v.hook?.isValid()) return;
-        const currentStatus = this.isHookOnWaterSurface(v.hook);
-
+        if (!p?.isValid() || !v.hook?.isValid() || v.isFishing === false) return;
+        const now = Date.now();
         if (!v.isStable) {
           if (
             Math.abs(v.hook.location.x - v.hookLoc.x) < 0.0001 &&
-            Math.abs(v.hook.location.y - v.hookLoc.y) < 0.1 &&
-            Math.abs(v.hook.location.z - v.hookLoc.z) < 0.0001
+            Math.abs(v.hook.location.y - v.hookLoc.y) < 0.02 &&
+            Math.abs(v.hook.location.z - v.hookLoc.z) < 0.0001 &&
+            (!v.lastSinkingCheck || now - v.lastSinkingCheck > (v.isBesideWater ? 1500 : 1000))
           ) {
-            this.#fishing.set(p, { ...v, isStable: true });
+            v.isStable = true;
           } else {
-            return this.#fishing.set(p, { ...v, hookLoc: v.hook.location });
+            v.hookLoc = v.hook.location;
           }
+          return;
         }
 
+        const currentStatus = this.isHookOnWaterSurface(v.hook);
+        const vy = currentStatus.velocity.y;
+        v.hookVY.push(vy);
+        if (v.hookVY.length > 5) v.hookVY.shift();
+        const avgY = v.hookVY.reduce((a, b) => a + b, 0) / v.hookVY.length;
+
         if (v.isStable && v.isFishing === null) {
-          if (!currentStatus.isOnWater) {
-            if (!currentStatus.isInWater) this.#fishing.set(p, {
-              ...v,
-              isFishing: false,
-            });
+          if (!currentStatus.isOnWater && !currentStatus.isBesideWater) {
+            if (!currentStatus.isInWater) {
+              v.isFishing = false;
+            }
             return;
           }
           this.hookOnWaterSurfaceChange.trigger(
@@ -291,15 +347,15 @@ class FishingEventManager {
               hook: v.hook,
               player: p,
               isFirst: true,
-              isOnWater: true,
+              ...currentStatus,
             })
           );
-          return this.#fishing.set(p, {
-            ...v,
-            isFishing: true,
-            isOnWater: true,
-            isOnWaterFirst: Date.now(),
-          });
+          v.isOnWater = currentStatus.isOnWater;
+          v.isInWater = currentStatus.isInWater;
+          v.isBesideWater = currentStatus.isBesideWater;
+          v.isFishing = true;
+          v.isOnWaterFirst = now;
+          return;
         }
 
         // 水面状态改变
@@ -312,19 +368,20 @@ class FishingEventManager {
               ...currentStatus,
             })
           );
-          this.#fishing.set(p, { ...v, ...currentStatus });
+          v.isOnWater = currentStatus.isOnWater;
+          v.isInWater = currentStatus.isInWater;
+          v.isBesideWater = currentStatus.isBesideWater;
         }
 
         // 鱼咬钩检测
-        if (v.isFishing && v.isOnWater) {
-          const now = Date.now();
-          // 检查鱼钩是否开始下沉（表示鱼咬钩）
-          const isSinking = v.hook.getVelocity().y < -0.06;
+        if (v.isFishing && v.isStable && v.isOnWater) {
+          const isSinking = v.isBesideWater ? Math.abs(avgY - vy) > 0.024 : vy < -0.06;
 
-          // 检查是否状态发生变化且距离上次检测超过一定时间
+          // log(isSinking, v.isBesideWater, Math.abs(avgY - vy));
+          // if (isSinking) error(Math.abs(avgY - vy));
+
           if (
-            v.isSinking !== isSinking &&
-            (!v.lastSinkingCheck || now - v.lastSinkingCheck > 1000)
+            v.isSinking !== isSinking && now - v.isOnWaterFirst > 1000
           ) {
             if (isSinking) {
               // 触发鱼咬钩事件
@@ -332,15 +389,13 @@ class FishingEventManager {
                 Object.freeze({
                   hook: v.hook,
                   player: p,
+                  isBesideWater: v.isBesideWater,
                 })
               );
+              v.lastSinkingCheck = now;
             }
-            // 更新状态
-            this.#fishing.set(p, {
-              ...v,
-              isSinking: isSinking,
-              lastSinkingCheck: now,
-            });
+            v.isStable = false;
+            v.isSinking = isSinking;
           }
         }
       });

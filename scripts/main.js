@@ -1,53 +1,14 @@
 /*
-    本作品采用知识共享署名-非商业性-相同方式共享 4.0 国际许可协议进行许可。 要查看此许可证的副本，请访问
-    https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans
+  本作品采用知识共享署名-非商业性-相同方式共享 4.0 国际许可协议进行许可。 要查看此许可证的副本，请访问
+  https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans
 
-    This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. To view a copy of this license, visit
-    http://creativecommons.org/licenses/by-nc-sa/4.0/
+  This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. To view a copy of this license, visit
+  https://creativecommons.org/licenses/by-nc-sa/4.0/
 */
 
 import * as mc from "@minecraft/server";
 import { ModalFormData } from "@minecraft/server-ui";
 import { Settings } from "./SystemSettings";
-
-// mc.system.afterEvents.scriptEventReceive.subscribe(event => {
-//   if (event.id !== "meow:t" || !event.sourceEntity) return;
-
-//   const { dimension, location } = event.sourceEntity;
-//   const createRod = (nameTag, enchantments = [], damageOffset = 0) => {
-//     const item = new mc.ItemStack("minecraft:fishing_rod");
-//     item.nameTag = nameTag;
-
-//     const durability = item.getComponent("minecraft:durability");
-//     if (durability) durability.damage = durability.maxDurability - damageOffset;
-
-//     const enchant = item.getComponent("minecraft:enchantable");
-//     if (enchant) {
-//       enchant.removeAllEnchantments();
-//       for (const { type, level } of enchantments) {
-//         enchant.addEnchantment({ type: mc.EnchantmentTypes.get(type), level });
-//       }
-//     }
-
-//     dimension.spawnItem(item, location);
-//   };
-
-//   // 生成四把测试钓鱼竿
-//   createRod("低耐久1", [{ type: "lure", level: 3 }], 3);
-//   createRod("低耐久2", [{ type: "lure", level: 3 }], 3);
-//   createRod("低耐久3-经验修补", [
-//     { type: "lure", level: 3 },
-//     { type: "mending", level: 1 }
-//   ], 3);
-//   createRod("低耐久4-耐久3", [
-//     { type: "lure", level: 3 },
-//     { type: "unbreaking", level: 3 }
-//   ], 5);
-//   createRod("快满耐久5-经验修补", [
-//     { type: "lure", level: 3 },
-//     { type: "mending", level: 1 }
-//   ], 383)
-// });
 
 if (Settings.auto) {
   await import("./lib/index").then(meow => {
@@ -63,19 +24,46 @@ if (Settings.auto) {
       Settings.language = "en_US";
     }
 
-    const LOOT_ITEMS = ["junk", "treasure", "fish"];
-    const LOOT_ITEMS_JUNGLE = ["jungle_junk", "treasure", "jungle_fish"];
-    const LOOT_WEIGHTS = [
-      [100, 50, 850],
-      [81, 71, 848],
-      [61, 92, 847],
-      [42, 113, 845],
+    const FISHING_MAIN_ENTRIES = [
+      { name: "junk",     weight: 10, quality: -2 },
+      { name: "treasure", weight: 5,  quality:  2 },
+      { name: "fish",     weight: 85, quality: -1 }
+    ];
+    // 丛林变体
+    const JUNGLE_FISHING_MAIN_ENTRIES = [
+      { name: "jungle_junk", weight: 10, quality: -2 },
+      { name: "treasure",    weight: 5,  quality:  2 },
+      { name: "jungle_fish", weight: 85, quality: -1 }
     ];
 
-    const AutoFish = new Set(); // 正在自动钓鱼的玩家 ID 集合
+    const langOptions = [undefined].concat(meow.language);
+
+    /**
+     * 存储正在使用自动钓鱼功能的玩家ID集合
+     * @type {Set<string>}
+     */
+    const AutoFish = new Set();
+    
+    /**
+     * 存储钓鱼钩相关定时器的映射表
+     * Key: 玩家ID, Value: 定时器ID
+     * @type {Map<string, number>}
+     */
     const HookTp = new Map();
-    const FishLoot = new Map(); // 记录战利品位置信息
-    const SettingPlayer = new Set(); // 防止设置界面重复打开
+    
+    /**
+     * 存储钓鱼战利品位置信息的映射表
+     * Key: 玩家ID, Value: 战利品位置相关信息对象
+     * @type {Map<string, { locF:mc.Vector3, tpLoc:mc.Vector3, time:number, lootMode:number, isBesideWater:boolean, particleData:null | number, volume:number }>}
+     */
+    const FishLoot = new Map();
+    
+    /**
+     * 存储正在打开设置界面的玩家ID集合
+     * 用于防止玩家重复打开设置界面
+     * @type {Set<string>}
+     */
+    const SettingPlayer = new Set();
 
     // —————— 工具函数 ——————
 
@@ -84,18 +72,52 @@ if (Settings.auto) {
     const shouldProtectRod = (durability, mendingLevel) =>
       durability.damage >= (durability.maxDurability - 1) && mendingLevel < 1;
 
-    const handleMending = (xp, durability) => {
-      const damage = durability.damage - xp * 2;
-      durability.damage = Math.max(0, damage);
-      return (Math.floor(Math.min(0, damage / 2)) * -1);
-    };
-
     const showXpMessage = (player, lang, xp, suffix = "") => {
       meow.runCommand(
         player,
         `title @s actionbar ${meow.getLocalizedText("gain_xp", lang, { xp })}${suffix}`
       );
     };
+
+    // —————— 海之眷顾附魔处理 ——————
+
+    /**
+     * 根据 luck 动态计算 fishing loot 类型
+     * @param {number} luck - 海之眷顾等级（0~3+）
+     * @param {boolean} useJungle - 是否使用丛林钓鱼池
+     * @returns {string} loot 类型名称（如 "treasure"）
+     */
+    function getFishingLootType(luck, useJungle = false) {
+      // if (system_luck === 1) return "junk";
+      // if (system_luck === 2) return "treasure";
+
+      const entries = useJungle ? JUNGLE_FISHING_MAIN_ENTRIES : FISHING_MAIN_ENTRIES;
+
+      const weightedEntries = [];
+      let totalWeight = 0;
+
+      for (const entry of entries) {
+        const finalWeight = Math.max(0, entry.weight + entry.quality * luck);
+        if (finalWeight > 0) {
+          weightedEntries.push({ name: entry.name, weight: finalWeight });
+          totalWeight += finalWeight;
+        }
+      }
+
+      if (totalWeight === 0) return "fish";
+
+      const random = Math.floor(Math.random() * totalWeight);
+      let cumulative = 0;
+
+      for (const { name, weight } of weightedEntries) {
+        cumulative += weight;
+        if (random < cumulative) {
+          return name;
+        }
+      }
+
+      return weightedEntries[weightedEntries.length - 1].name;
+    }
 
     // —————— 钓鱼竿替换逻辑 ——————
 
@@ -134,6 +156,12 @@ if (Settings.auto) {
     meow.Events.fishing.castRod.subscribe(event => {
       const compulsoryAuto = event.player.getDynamicProperty("meow_compulsoryAuto") ?? Boolean(Settings.compulsory_auto);
       if (!compulsoryAuto && !event.player.isSneaking) return;
+      // 迁移v0.1.4-beta的meow_lootAtPlayerLoc历史设置
+      const oldLootSetting = event.player.getDynamicProperty("meow_lootAtPlayerLoc");
+      if (oldLootSetting !== undefined) {
+        event.player.setDynamicProperty("meow_lootMode", oldLootSetting ? 1 : 0);
+        event.player.setDynamicProperty("meow_lootAtPlayerLoc"); // 删除旧属性
+      }
       AutoFish.add(event.player.id);
       const lang = event.player.getDynamicProperty("meow_language");
       event.player.sendMessage(meow.getLocalizedText("auto_fish", lang));
@@ -145,7 +173,7 @@ if (Settings.auto) {
         mc.system.clearRun(HookTp.get(event.player.id));
         HookTp.delete(event.player.id);
       }
-    })
+    });
 
     meow.Events.fishing.beforeReelRod.subscribe(event => {
       if (!AutoFish.has(event.player.id)) return;
@@ -160,18 +188,27 @@ if (Settings.auto) {
 
     [
       meow.Events.fishing.reelRod,
-      meow.Events.fishing.hookHitEntity,
-      mc.world.beforeEvents.playerLeave
+      meow.Events.fishing.hookHitEntity
     ].forEach(evt =>
       evt.subscribe(e => {
+        const lang = e.player.getDynamicProperty("meow_language");
         if (!AutoFish.has(e.player.id)) return;
         AutoFish.delete(e.player.id);
         if (HookTp.has(e.player.id)) {
           mc.system.clearRun(HookTp.get(e.player.id));
           HookTp.delete(e.player.id);
         }
+        e.player.sendMessage(meow.getLocalizedText("auto_fish_stop", lang));
       })
     );
+
+    mc.world.beforeEvents.playerLeave.subscribe(event => {
+      AutoFish.delete(event.player.id);
+      if (HookTp.has(event.player.id)) {
+        mc.system.clearRun(HookTp.get(event.player.id));
+        HookTp.delete(event.player.id);
+      }
+    });
 
     // —————— 核心：鱼咬钩处理 ——————
 
@@ -179,23 +216,31 @@ if (Settings.auto) {
       const player = event.player;
       if (!AutoFish.has(player.id)) return;
 
-      const equippable = player.getComponent("minecraft:equippable");
-      const item = equippable?.getEquipment(mc.EquipmentSlot.Mainhand);
+      const selectedSlotIndex = player.selectedSlotIndex;
+      const inventory = player.getComponent("minecraft:inventory")?.container;
+      const item = inventory?.getItem(selectedSlotIndex);
       if (!item || item.typeId !== "minecraft:fishing_rod") return;
+
+      const isInCreative = isCreative(player);
+      if (!isInCreative) {
+        item.lockMode = "slot"; // 锁定物品
+        inventory.setItem(selectedSlotIndex, item);
+      }
 
       const lang = player.getDynamicProperty("meow_language") ?? Settings.language;
       const protect = player.getDynamicProperty("meow_protect") ?? Boolean(Settings.protect);
       const replace = player.getDynamicProperty("meow_replace") ?? Boolean(Settings.replace);
       const reduceSinking = player.getDynamicProperty("meow_reduceSinking") ?? Boolean(Settings.reduce_sinking);
       const jungleLoot = player.getDynamicProperty("meow_jungleLoot") ?? false;
-      const lootAtPlayerLoc = player.getDynamicProperty("meow_lootAtPlayerLoc") ?? false;
-      const isInCreative = isCreative(player);
+      const lootMode = player.getDynamicProperty("meow_lootMode") ?? 0;
+      const particleMode = Math.min(player.getDynamicProperty("meow_particleMode") ?? 2, Settings.fancy_particle ? Number.MAX_SAFE_INTEGER : 2);
+      const volume = Math.max(0, Math.min(player.getDynamicProperty("meow_volume") ?? 1, 1));
 
       const durability = item.getComponent("minecraft:durability");
       if (!durability) return meow.error("Failed to get fishing rod durability (无法获取鱼竿耐久)");
       const enchant = item.getComponent("minecraft:enchantable");
       const mending = enchant?.getEnchantment("mending")?.level ?? 0;
-      const luck = Math.min(enchant?.getEnchantment("luck_of_the_sea")?.level ?? 0, 3);
+      const luck = Math.max(0, enchant?.getEnchantment("luck_of_the_sea")?.level ?? 0);
       const unbreaking = enchant?.getEnchantment("unbreaking")?.level ?? 0;
 
       // 耐久保护检查（仅生存模式）
@@ -203,13 +248,13 @@ if (Settings.auto) {
         return player.sendMessage(meow.getLocalizedText("rod_durability_warning", lang));
       }
 
-      if (reduceSinking) {
+      if (reduceSinking && !event.isBesideWater) {
         // 减少鱼钩下沉
         const locH = meow.Vector3.copy(event.hook.location);
         const r = mc.system.runInterval(() => {
           if (!event.hook?.isValid()) return;
           event.hook.teleport(locH);
-          event.hook.clearVelocity();
+          event.hook.applyImpulse(meow.Vector3.scl(event.hook.getVelocity(), -0.8));
         }, 1);
         HookTp.set(player.id, r);
         mc.system.runTimeout(() => {
@@ -220,22 +265,13 @@ if (Settings.auto) {
       }
 
       // 决定战利品类型
-      const lootType = meow.weightedLottery(
-        Settings.allow_jungle_loot && jungleLoot
-          ? LOOT_ITEMS_JUNGLE
-          : LOOT_ITEMS,
-        LOOT_WEIGHTS[luck] ?? LOOT_WEIGHTS[0],
-        1000
-      );
+      const lootType = getFishingLootType(luck, Settings.allow_jungle_loot && jungleLoot);
       let xp = meow.getRndInteger(1, lootType === "fish" ? 4 : lootType === "junk" ? 2 : 6);
 
-      // 耐久/经验处理（仅生存模式）
-      if (!isInCreative) {
-        if (mending > 0) {
-          xp = handleMending(xp, durability);
-        } else if (meow.consumeDurability(unbreaking)) {
-          durability.damage += 1;
-        }
+      // 耐久处理（仅生存模式）
+      // 经验修补由游戏底层在玩家拾取经验球时自动触发，无需手动处理
+      if (!isInCreative && meow.consumeDurability(unbreaking)) {
+        durability.damage += 1;
       }
 
       const maxDur = durability.maxDurability;
@@ -271,28 +307,30 @@ if (Settings.auto) {
       }
 
       // 执行替换或更新主手装备
+      item.lockMode = "none";
       if (needReplace) {
         if (!replaceFishingRod(player, item)) {
           messageSuffix = meow.getLocalizedText("rod_replaced_failed", lang);
-          if (protect) mc.system.runTimeout(() => equippable.setEquipment(mc.EquipmentSlot.Mainhand, item), 1);
-          else mc.system.runTimeout(() => equippable.setEquipment(mc.EquipmentSlot.Mainhand), 1);
+          if (protect) mc.system.runTimeout(() => inventory.setItem(selectedSlotIndex, item), 1);
+          else mc.system.runTimeout(() => inventory.setItem(selectedSlotIndex), 1);
         } else yesReplace = true;
       } else if (!isInCreative) {
         mc.system.runTimeout(() => {
           if (isBroken) {
             // 钓鱼竿已损坏，清空手持装备
-            equippable.setEquipment(mc.EquipmentSlot.Mainhand);
+            inventory.setItem(selectedSlotIndex);
           } else {
             // 钓鱼竿未损坏，更新手持装备耐久值
-            equippable.setEquipment(mc.EquipmentSlot.Mainhand, item);
+            inventory.setItem(selectedSlotIndex, item);
           }
         }, 1);
       }
 
+      if (event.isBesideWater) messageSuffix += " " + meow.getLocalizedText("fishing_machine_mode", lang);
+
       // 显示经验与状态
       showXpMessage(player, lang, xp, messageSuffix);
 
-      // 声音与粒子
       if (yesReplace) meow.runCommand(player, "playsound mob.villager.yes @a ^^^1 0.7");
       else if (replace && needReplace) {
         if (isBroken) meow.runCommand(player, "playsound random.break @a ^^^1 0.7");
@@ -300,60 +338,198 @@ if (Settings.auto) {
       }
       else if (isBroken) meow.runCommand(player, "playsound random.break @a ^^^1 0.7");
 
-      meow.runCommand(player, "playsound random.orb @a ^^^1 0.2 0.5");
-      // 经验与战利品
-      player.addExperience(xp);
+      meow.runCommand(player, `playsound random.orb @a ^^^1 ${""+0.2*volume} 0.5`);
 
-      if (lootAtPlayerLoc) {
-        const locP = meow.Vector3.floor(player.location);
-        meow.runCommand(player, `loot spawn ${locP.x} ${locP.y} ${locP.z} loot "gameplay/fishing/${lootType}"`);
-        FishLoot.set(player.id, {
-          lootLoc: locP,
-          tpLoc: meow.Vector3.add(player.location, 0, 0.1, 0),
-          time: Date.now(),
-          lootAtPlayerLoc: true,
-        })
-      } else {
-        const locL = meow.Vector3.floor(event.hook.location);
-        meow.runCommand(player, `loot spawn ${locL.x} ${locL.y} ${locL.z} loot "gameplay/fishing/${lootType}"`);
-        FishLoot.set(player.id, {
-          lootLoc: locL,
-          tpLoc: meow.Vector3.add(event.hook.location, 0, 0.5, 0),
-          time: Date.now(),
-          lootAtPlayerLoc: false,
-        });
+      while(xp--) player.dimension.spawnEntity("minecraft:xp_orb", player.location);
+
+      const now = Date.now();
+      let particleData = null;
+
+      // 模式0 无粒子
+      if (particleMode === 1) // 少量粒子
+        meow.runCommand(
+          player,
+          `particle minecraft:villager_happy ${event.hook.location.x} ${event.hook.location.y + 0.5
+          } ${event.hook.location.z}`
+        );
+      else if (particleMode === 2 || (!Settings.fancy_particle && particleMode === 3)) // 正常粒子
+        meow.runCommand(
+          player,
+          `particle minecraft:crop_growth_emitter ${event.hook.location.x} ${event.hook.location.y + 0.2
+          } ${event.hook.location.z}`
+        );
+      else if (particleMode === 3) { // 华丽粒子 - 有检测物品类别
+        switch (lootType) {
+          case "fish":
+          case "jungle_fish":
+            meow.runCommand(
+              player,
+              `particle minecraft:crop_growth_emitter ${event.hook.location.x} ${event.hook.location.y + 0.2
+              } ${event.hook.location.z}`
+            );
+            break;
+          case "junk":
+          case "jungle_junk":
+            meow.runCommand(
+              player,
+              `particle minecraft:cauldron_explosion_emitter ${event.hook.location.x} ${event.hook.location.y + 0.2
+              } ${event.hook.location.z}`
+            );
+            meow.runCommand(player, `playsound block.composter.fill @a ^^^1 ${""+0.5*volume} 1`);
+            break;
+          case "treasure":
+            particleData = particleMode;
+        }
       }
 
-      meow.runCommand(
-        player,
-        `particle minecraft:crop_growth_emitter ${event.hook.location.x} ${event.hook.location.y} ${event.hook.location.z}`
-      );
+      const locD = lootMode === 1 ? player.location : event.hook.location,
+        locF = meow.Vector3.floor(locD);
+      meow.runCommand(player, `loot spawn ${locF.x} ${locF.y} ${locF.z} loot "gameplay/fishing/${lootType}"`);
+      FishLoot.set(player.id, {
+        locF,
+        tpLoc: meow.Vector3.add(locD, 0, 0.5, 0),
+        time: now,
+        lootMode,
+        isBesideWater: event.isBesideWater,
+        particleData,
+        volume
+      });
     });
 
     // —————— 战利品吸附逻辑 ——————
 
     mc.world.afterEvents.entitySpawn.subscribe(event => {
       if (event.entity.typeId !== "minecraft:item") return;
+      const now = Date.now();
 
-      FishLoot.forEach(({ lootLoc, tpLoc, time, lootAtPlayerLoc }, playerId) => {
-        if (Date.now() - time > 2000) return FishLoot.delete(playerId);
+      for (const [
+        playerId,
+        { locF, tpLoc, time, lootMode, isBesideWater, particleData, volume },
+      ] of FishLoot) {
+        // 检查超时情况
+        const timeElapsed = now - time;
+        if (timeElapsed > 500) {
+          FishLoot.delete(playerId);
+          continue;
+        }
+
         const player = mc.world.getEntity(playerId);
-        if (!player || Date.now() - time > 1000) return;
+        if (!player) continue;
 
-        const dist = meow.Vector3.distance(event.entity.location, lootLoc);
-        if (dist > 0.1) return;
+        // 检查物品是否在预期的生成位置附近
+        const itemPos = event.entity.location;
+        if (
+          (itemPos.x - locF.x) * (itemPos.x - locF.x) +
+            (itemPos.y - locF.y) * (itemPos.y - locF.y) +
+            (itemPos.z - locF.z) * (itemPos.z - locF.z) >
+          0.01
+        ) {
+          continue;
+        }
 
-        event.entity.teleport(tpLoc);
-        if (lootAtPlayerLoc) return FishLoot.delete(playerId);
-        const dir = meow.Vector3.subtract(player.location, event.entity.location);
-        const len = Math.sqrt(dir.x**2 + dir.y**2 + dir.z**2) || 1;
+        if (particleData === 3) {
+          const itemStack = event.entity.getComponent("minecraft:item")?.itemStack;
+          const enchant = itemStack.getComponent("minecraft:enchantable");
+
+          if (
+            enchant
+          ) {
+            meow.runCommand(player, `playsound trial_spawner.eject_item @a ^^^1 ${""+0.5*volume} 1`);
+            if (
+              enchant.getEnchantments().length >
+              (enchant.hasEnchantment("minecraft:vanishing") ? 3 : 2)
+            ) {
+              meow.runCommand(
+                player,
+                `particle minecraft:trial_spawner_detection ${tpLoc.x - 0.5} ${
+                  tpLoc.y - 2
+                } ${tpLoc.z - 0.5}`
+              );
+              meow.runCommand(
+                player,
+                `playsound chime.amethyst_block @a ^^^1 ${""+1*volume} 1`
+              );
+              if (enchant.getEnchantments().length > 4) {
+                meow.runCommand(player, "playsound trial_spawner.detect_player @a ^^^1 0.5 1");
+                meow.runCommand(
+                  player,
+                  `particle minecraft:totem_particle ${tpLoc.x} ${tpLoc.y + 0.2} ${tpLoc.z}`
+                );
+                meow.runCommand(
+                  player,
+                  `particle minecraft:lava_particle ${tpLoc.x} ${tpLoc.y + 0.3} ${tpLoc.z}`
+                );
+                meow.runCommand(
+                  player,
+                  `particle minecraft:lava_particle ${tpLoc.x} ${tpLoc.y + 0.3} ${tpLoc.z}`
+                );
+                meow.runCommand(
+                  player,
+                  `particle minecraft:lava_particle ${tpLoc.x} ${tpLoc.y + 0.3} ${tpLoc.z}`
+                );
+              }
+            }
+            else {
+              meow.runCommand(
+                player,
+                `particle minecraft:trial_spawner_detection_ominous ${
+                  tpLoc.x - 0.5
+                } ${tpLoc.y - 2} ${tpLoc.z - 0.5}`
+              );
+            }
+          }
+          else {
+            meow.runCommand(
+              player,
+              `particle minecraft:crop_growth_emitter ${tpLoc.x} ${tpLoc.y - 0.2
+              } ${tpLoc.z}`
+            );
+          }
+        }
+
+        // 如果非原版风格，则无需进一步处理
+        if (lootMode !== 0 || isBesideWater) {
+          event.entity.teleport(tpLoc);
+          FishLoot.delete(playerId);
+          break;
+        }
+
+        const dirX = itemPos.x - player.location.x;
+        const dirZ = itemPos.z - player.location.z;
+        const len = Math.sqrt(dirX * dirX + dirZ * dirZ) || 1; // 避免除零
+
+        const itemPos2 = {
+          x: tpLoc.x - (dirX / len),
+          y: tpLoc.y,
+          z: tpLoc.z - (dirZ / len)
+        };
+        event.entity.teleport(itemPos2);
+
+        const playerPos = meow.Vector3.add(player.location, 0, 1, 0);
+        const distance = meow.Vector3.distance(playerPos, itemPos2);
+
+        // 如果距离太近则不处理
+        if (distance < 2) {
+          FishLoot.delete(playerId);
+          break;
+        }
+
+        const dx = playerPos.x - itemPos2.x;
+        const dy = playerPos.y - itemPos2.y;
+        const dz = playerPos.z - itemPos2.z;
+
+        const speedFactor = 0.1;
+        const extraY = Math.sqrt(Math.sqrt(distance)) * 0.08;
+
         event.entity.applyImpulse({
-          x: (dir.x / len) * 1.3,
-          y: (dir.y / len) * 2 + 0.3,
-          z: (dir.z / len) * 1.3,
+          x: dx * speedFactor,
+          y: dy * speedFactor + extraY,
+          z: dz * speedFactor,
         });
+
         FishLoot.delete(playerId);
-      });
+        break;
+      }
     });
 
     // —————— 设置界面 ——————
@@ -373,7 +549,6 @@ if (Settings.auto) {
       mc.system.runTimeout(() => SettingPlayer.delete(player.id), 10);
 
       const lang = player.getDynamicProperty("meow_language");
-      const langOptions = [undefined, "zh_CN", "zh_TW", "en_US"];
       const langIndex = langOptions.findIndex(l => l === lang);
 
       const protect =
@@ -388,8 +563,9 @@ if (Settings.auto) {
         Boolean(Settings.reduce_sinking);
       const tip =
         player.getDynamicProperty("meow_tip") ?? Boolean(Settings.tip);
-      const lootAtPlayerLoc =
-        player.getDynamicProperty("meow_lootAtPlayerLoc") ?? false;
+      const lootMode = player.getDynamicProperty("meow_lootMode") ?? 0;
+      const particleMode = Math.min(player.getDynamicProperty("meow_particleMode") ?? 2, Settings.fancy_particle ? Number.MAX_SAFE_INTEGER : 2);
+      const volume = Math.max(0, Math.min(player.getDynamicProperty("meow_volume") ?? 1, 1));
       const jungleLoot = player.getDynamicProperty("meow_jungleLoot") ?? false;
 
       mc.system.run(() => {
@@ -399,53 +575,77 @@ if (Settings.auto) {
             meow.getLocalizedText("setting_language", lang),
             [
               "默认 Default: " +
-                meow.getLocalizedText("lang", Settings.language),
-              "简体中文",
-              "繁體中文",
-              "English",
+              meow.getLocalizedText("lang", Settings.language),
+              ...meow.language.map(l => meow.getLocalizedText("lang", l)),
             ],
-            langIndex
+            langIndex,
           )
           .toggle(meow.getLocalizedText("setting_protect", lang), protect)
           .toggle(meow.getLocalizedText("setting_replace", lang), replace)
           .toggle(
             meow.getLocalizedText("setting_compulsoryAuto", lang),
-            compulsoryAuto
+            compulsoryAuto,
           )
           .toggle(
             meow.getLocalizedText("setting_reduceSinking", lang),
-            reduceSinking
+            reduceSinking,
           )
           .toggle(meow.getLocalizedText("setting_tip", lang), tip)
-          .toggle(
-            meow.getLocalizedText("setting_lootAtPlayerLoc", lang),
-            lootAtPlayerLoc
-          );
+          .dropdown(
+            meow.getLocalizedText("setting_lootMode", lang),
+            [
+              meow.getLocalizedText("setting_lootMode_0", lang),
+              meow.getLocalizedText("setting_lootMode_1", lang),
+              meow.getLocalizedText("setting_lootMode_2", lang),
+            ],
+            lootMode,
+          )
+          .dropdown(
+            meow.getLocalizedText("setting_particleMode", lang),
+            [
+              meow.getLocalizedText("setting_particleMode_0", lang),
+              meow.getLocalizedText("setting_particleMode_1", lang),
+              meow.getLocalizedText("setting_particleMode_2", lang),
+            ].concat(
+              Settings.fancy_particle
+                ? [meow.getLocalizedText("setting_particleMode_3", lang)]
+                : [],
+            ),
+            particleMode,
+          )
+          .slider(meow.getLocalizedText("setting_volume", lang), 0, 100, 1, volume * 100);
         if (Settings.allow_jungle_loot)
           form.toggle(
             meow.getLocalizedText("setting_jungleLoot", lang),
             jungleLoot
           );
         form.show(player).then(result => {
-          if (result.canceled) return;
+          if (result.canceled) return player.sendMessage(meow.getLocalizedText("setting_canceled", lang));
+          let i = 0;
           player.setDynamicProperty(
             "meow_language",
-            langOptions[result.formValues[0]]
+            langOptions[result.formValues[i++]]
           );
-          player.setDynamicProperty("meow_protect", result.formValues[1]);
-          player.setDynamicProperty("meow_replace", result.formValues[2]);
+          player.setDynamicProperty("meow_protect", result.formValues[i++]);
+          player.setDynamicProperty("meow_replace", result.formValues[i++]);
           player.setDynamicProperty(
             "meow_compulsoryAuto",
-            result.formValues[3]
+            result.formValues[i++]
           );
-          player.setDynamicProperty("meow_reduceSinking", result.formValues[4]);
-          player.setDynamicProperty("meow_tip", result.formValues[5]);
-          player.setDynamicProperty("meow_lootAtPlayerLoc", result.formValues[6])
-          let i = 7;
+          player.setDynamicProperty("meow_reduceSinking", result.formValues[i++]);
+          player.setDynamicProperty("meow_tip", result.formValues[i++]);
+          player.setDynamicProperty("meow_lootMode", result.formValues[i++]);
+          player.setDynamicProperty("meow_particleMode", result.formValues[i++]);
+          player.setDynamicProperty("meow_volume", result.formValues[i++] / 100);
           if (Settings.allow_jungle_loot) {
-            player.setDynamicProperty("meow_jungleLoot", result.formValues[i]);
-            i++;
+            player.setDynamicProperty("meow_jungleLoot", result.formValues[i++]);
           }
+          player.sendMessage(
+            meow.getLocalizedText(
+              "setting_saved",
+              langOptions[result.formValues[0]]
+            )
+          );
         });
       });
     });

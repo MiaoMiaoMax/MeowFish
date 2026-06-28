@@ -1,9 +1,9 @@
 /*
-    本作品采用知识共享署名-非商业性-相同方式共享 4.0 国际许可协议进行许可。 要查看此许可证的副本，请访问
-    https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans
+  本作品采用知识共享署名-非商业性-相同方式共享 4.0 国际许可协议进行许可。 要查看此许可证的副本，请访问
+  https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans
 
-    This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. To view a copy of this license, visit
-    http://creativecommons.org/licenses/by-nc-sa/4.0/
+  This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. To view a copy of this license, visit
+  https://creativecommons.org/licenses/by-nc-sa/4.0/
 */
 
 /*+==================分==界==线==================+*/
@@ -167,14 +167,12 @@ const Settings = {
     可填入"0"和"1"，
     "0"代表"不减少下沉"，
     "1"代表"减少下沉"。
-    启用之后，钓鱼钩下沉幅度将会减少。
-    减少了鱼钩上浮时间（鱼钩后摇时间），也许会缩短咬钩间隔。
+    启用之后，钓鱼钩下沉幅度将会减少。(避免勾到其他实体）
     
     Can fill in "0" and "1",
     "0" means "don't reduce sinking",
     "1" means "reduce sinking".
-    After enabling, the fishing hook sinking amplitude will be reduced.
-    This reduces the hook’s floating time (i.e., recovery time after casting), which may shorten the interval between bites.
+    After enabling, the fishing hook sinking amplitude will be reduced. (helps avoid hooking onto other entities).
   */
   ,
 
@@ -194,6 +192,27 @@ const Settings = {
     "0" means "not allowed",
     "1" means "allowed".
     When enabled, players can choose whether to force-enable jungle biome fishing loot.
+  */
+  ,
+
+
+  // 是否允许玩家选择华丽粒子特效
+  // Whether players are allowed to choose fancy particle effects
+
+  fancy_particle: 1
+
+  /*
+    可填入"0"和"1"，
+    "0"代表"不允许"，
+    "1"代表"允许"。
+    启用之后，玩家将能够自行选择华丽粒子特效。
+    华丽粒子的触发判定会消耗一定的服务端资源。
+    
+    Can fill in "0" and "1",
+    "0" means "not allowed",
+    "1" means "allowed".
+    When enabled, players can choose fancy particle effects.
+    The triggering of fancy particles will consume a certain amount of server resources.
   */
   ,
 
