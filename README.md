@@ -33,14 +33,14 @@ v0.1.5-beta
 **_! 在 1.21.70 或更高版本可兼容成就 !_**
 
 ## 须知
-请注意钓鱼机模式为实验性模式
+请注意钓鱼机模式为实验性模式  
 准确率会比常规模式有所下降
 
 ## 其他
 觉得项目有用的话，可以给个star好吗 QwQ  
 目前为beta测试，如果遇到问题，欢迎反馈
 
-> 你可以关注作者bilibli平台 [CNQuanYeCha](https://space.bilibili.com/1968985335) 的动态来获得相关消息
+> 你可以关注作者bilibli平台 [CNQuanYeCha](https://space.bilibili.com/1968985335) 的动态来获得相关消息  
 > 也欢迎加入Discord [MeewFish](https://discord.gg/VshSAY4wx6)
 
 > 本作品采用知识共享署名-非商业性-相同方式共享 4.0 国际许可协议进行许可。  
