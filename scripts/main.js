@@ -88,9 +88,6 @@ if (Settings.auto) {
      * @returns {string} loot 类型名称（如 "treasure"）
      */
     function getFishingLootType(luck, useJungle = false) {
-      // if (system_luck === 1) return "junk";
-      // if (system_luck === 2) return "treasure";
-
       const entries = useJungle ? JUNGLE_FISHING_MAIN_ENTRIES : FISHING_MAIN_ENTRIES;
 
       const weightedEntries = [];
@@ -156,12 +153,6 @@ if (Settings.auto) {
     meow.Events.fishing.castRod.subscribe(event => {
       const compulsoryAuto = event.player.getDynamicProperty("meow_compulsoryAuto") ?? Boolean(Settings.compulsory_auto);
       if (!compulsoryAuto && !event.player.isSneaking) return;
-      // 迁移v0.1.4-beta的meow_lootAtPlayerLoc历史设置
-      const oldLootSetting = event.player.getDynamicProperty("meow_lootAtPlayerLoc");
-      if (oldLootSetting !== undefined) {
-        event.player.setDynamicProperty("meow_lootMode", oldLootSetting ? 1 : 0);
-        event.player.setDynamicProperty("meow_lootAtPlayerLoc"); // 删除旧属性
-      }
       AutoFish.add(event.player.id);
       const lang = event.player.getDynamicProperty("meow_language");
       event.player.sendMessage(meow.getLocalizedText("auto_fish", lang));
@@ -204,6 +195,7 @@ if (Settings.auto) {
 
     mc.world.beforeEvents.playerLeave.subscribe(event => {
       AutoFish.delete(event.player.id);
+      FishLoot.delete(event.player.id);
       if (HookTp.has(event.player.id)) {
         mc.system.clearRun(HookTp.get(event.player.id));
         HookTp.delete(event.player.id);
@@ -654,6 +646,12 @@ if (Settings.auto) {
 
     mc.world.afterEvents.playerSpawn.subscribe(event => {
       if (!event.player?.isValid() || !event.initialSpawn) return;
+      // 迁移v0.1.4-beta的meow_lootAtPlayerLoc历史设置
+      const oldLootSetting = event.player.getDynamicProperty("meow_lootAtPlayerLoc");
+      if (oldLootSetting !== undefined) {
+        event.player.setDynamicProperty("meow_lootMode", oldLootSetting ? 1 : 0);
+        event.player.setDynamicProperty("meow_lootAtPlayerLoc"); // 删除旧属性
+      }
       const tip = event.player.getDynamicProperty("meow_tip") ?? Boolean(Settings.tip);
       if (!tip) return;
       const lang = event.player.getDynamicProperty("meow_language");

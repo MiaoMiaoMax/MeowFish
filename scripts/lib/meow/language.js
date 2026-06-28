@@ -161,15 +161,61 @@ const translations = {
     zh_TW: "温馨提示（進入遊戲時的提示）\n\n",
     en_US: "Friendly reminder (shown when entering the game)\n\n",
   },
-  setting_lootAtPlayerLoc: {
-    zh_CN: "战利品将生成在玩家位置\n（直接在脚下生成）\n\n",
-    zh_TW: "戰利品將生成在玩家位置\n（直接在脚下生成）\n\n",
-    en_US: "Loot spawns at player location\n(Generated directly at your feet)\n\n",
-  },
   setting_jungleLoot: {
     zh_CN: "是否强制获取丛林群系钓鱼战利品\n（比普通战利品多了竹子等的小东西）\n\n",
     zh_TW: "是否強制獲取丛林群系釣魚戰利品\n（比普通戰利品多了竹子等的小東西）\n\n",
     en_US: "Whether to force the acquisition of loot from the Jungle biome\n(There are small things like bamboo added to the normal loot)\n\n",
+  },
+  setting_lootMode: {
+    zh_CN: "战利品生成方式",
+    zh_TW: "戰利品生成方式",
+    en_US: "Loot generation mode",
+  },
+  setting_lootMode_0: {
+    zh_CN: "原版风格",
+    zh_TW: "原版風格",
+    en_US: "Vanilla",
+  },
+  setting_lootMode_1: {
+    zh_CN: "将生成在玩家位置",
+    zh_TW: "將生成在玩家位置",
+    en_US: "At player location",
+
+  },
+  setting_lootMode_2: {
+    zh_CN: "将生成在浮漂位置",
+    zh_TW: "將生成在浮漂位置",
+    en_US: "At fishing hook position",
+  },
+  setting_particleMode: {
+    zh_CN: "\n粒子效果",
+    zh_TW: "\n粒子效果",
+    en_US: "\nParticle effect",
+  },
+  setting_particleMode_0: {
+    zh_CN: "无粒子效果",
+    zh_TW: "無粒子效果",
+    en_US: "No particle effects",
+  },
+  setting_particleMode_1: {
+    zh_CN: "少量粒子效果",
+    zh_TW: "少量粒子效果",
+    en_US: "Low particle effects",
+  },
+  setting_particleMode_2: {
+    zh_CN: "正常粒子效果",
+    zh_TW: "正常粒子效果",
+    en_US: "Normal particle effects",
+  },
+  setting_particleMode_3: {
+    zh_CN: "华丽粒子效果",
+    zh_TW: "華麗粒子效果",
+    en_US: "Fancy particle effects",
+  },
+  setting_volume: {
+    zh_CN: "\n音效音量",
+    zh_TW: "\n音效音量",
+    en_US: "\nSound volume",
   }
 };
 
