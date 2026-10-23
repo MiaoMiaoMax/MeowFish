@@ -1,5 +1,11 @@
 # Language File Contribution Guide
 
+<div align="center">
+
+English | [简体中文](./CONTRIBUTING.zh_CN.md) | [繁体中文](./CONTRIBUTING.zh_TW.md)
+
+</div>
+
 `scripts\locales` directory contains all language files for MeowFish-AutoFish. Each language file is a standalone ES module that exports a flat `key → text` object.
 
 We welcome contributions in any language. As long as you can express the UI text clearly in your native language, we'll take care of the rest.
