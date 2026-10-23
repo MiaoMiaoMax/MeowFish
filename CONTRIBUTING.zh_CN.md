@@ -1,7 +1,7 @@
 # 语言文件贡献指南
 
 <div align="center">
-  
+
 [English](./CONTRIBUTING.md) | 简体中文 | [繁体中文](./CONTRIBUTING.zh_TW.md)
 
 </div>
