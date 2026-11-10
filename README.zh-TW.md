@@ -100,4 +100,4 @@ MeowFish 使用內建的原版釣魚戰利品表和獨立擲表引擎計算獎�
 
 本作品採用創用 CC 姓名標示-非商業性-相同方式分享 4.0 國際授權條款（CC BY-NC-SA 4.0）。
 
-[查看授權條款](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+[查看授權條款](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hant)
