@@ -9,28 +9,28 @@
 		"product_type": "addon"
 	},
 	"header": {
-		"description": "§l§3CNQuanYeCha的MeowFish-自动钓鱼\nv0.1.5-beta\n(CNQuanYeCha's MeowFish - Auto Fishing)\n§c注意：该模块适配游戏版本为1.21.0或以上\n在1.21.70或更高版本可兼容成就\nNote: This module is compatible with game version 1.21.0 or above\nAchievements are compatible with version 1.21.70 or higher\n\n§f作者bilibili主页：\nhttps://space.bilibili.com/1968985335\n\n§f本作品采用知识共享署名-非商业性-相同方式共享 4.0 国际许可协议进行许可。 要查看此许可证的副本，请访问\nhttps://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans\n\nThis work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. To view a copy of this license, visit\nhttps://creativecommons.org/licenses/by-nc-sa/4.0/",
+		"description": "§l§3MeowFish-自动钓鱼\nv1.0.0\n(MeowFish - Auto Fishing)\n§c注意：该模块适配游戏版本为1.21.120或以上\n除1.26.50、1.26.51外，其他版本可兼容成就\nNote: This module requires game version 1.21.120 or above\nAchievements are currently compatible with all versions except 1.26.50 and 1.26.51\n\n§f作者bilibili主页：\nhttps://space.bilibili.com/1968985335\n\n§f本作品采用知识共享署名-非商业性-相同方式共享 4.0 国际许可协议进行许可。 要查看此许可证的副本，请访问\nhttps://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans\n\nThis work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. To view a copy of this license, visit\nhttps://creativecommons.org/licenses/by-nc-sa/4.0/",
 		"name": "MeowFish-自动钓鱼(Auto Fishing)",
 		"uuid": "31716871-2d08-487b-bf4b-242019f100d8",
-		"version": [0, 1, 5],
-		"min_engine_version": [1, 21, 0]
+		"version": [1, 0, 0],
+		"min_engine_version": [1, 21, 120]
 	},
 	"modules": [{
 		"description": "MeowFish",
 		"type": "script",
 		"language": "javascript",
 		"uuid": "7c19b4fc-a25c-41be-ad9c-cb6a433af203",
-		"version": [0, 1, 0],
+		"version": [1, 0, 0],
 		"entry": "scripts/main.js"
 	}],
 	"dependencies": [
 		{
 			"module_name": "@minecraft/server",
-			"version": [1, 11, 0]
+			"version": [2, 3, 0]
 		},
 		{
 			"module_name": "@minecraft/server-ui",
-			"version": [1, 0, 0]
+			"version": [2, 0, 0]
 		}
 	]
 }

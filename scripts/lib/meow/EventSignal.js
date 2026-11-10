@@ -1,4 +1,7 @@
 /*
+  MeowFish-AutoFish
+  Copyright (c) 2025 MiaoMiaoMax (2025-present)
+
   本作品采用知识共享署名-非商业性-相同方式共享 4.0 国际许可协议进行许可。 要查看此许可证的副本，请访问
   https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans
 
@@ -35,9 +38,16 @@ export class EventSignal {
   }
   /**
    * 触发事件
+   * 单个监听器抛错不得中断其他监听器，也不得让调用方误以为事件未处理
    * @param {T} arg - 传递给监听器的事件对象
    */
   trigger(arg) {
-    this.#listeners.forEach(callback => callback(arg));
+    for (const callback of this.#listeners) {
+      try {
+        callback(arg);
+      } catch (err) {
+        console.error("[EventSignal] listener failed:", err);
+      }
+    }
   }
 }

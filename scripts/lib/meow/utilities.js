@@ -1,4 +1,7 @@
 /*
+  MeowFish-AutoFish
+  Copyright (c) 2025 MiaoMiaoMax (2025-present)
+
   本作品采用知识共享署名-非商业性-相同方式共享 4.0 国际许可协议进行许可。 要查看此许可证的副本，请访问
   https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans
 
@@ -7,19 +10,19 @@
 */
 
 import * as mc from "@minecraft/server";
-import { error } from "./logging";
+import { error } from "./Logging.js";
+import { Vector3 } from "./Vector3.js";
+import { NumberUnits } from "../../locales/NumberUnits.js";
 
 /**
  * 执行命令
  * @param {mc.Entity|mc.Dimension} object 实体或纬度对象
  * @param {string} command 命令
- * @param {boolean} isReturn 是否返回执行结果
  * @returns 
  */
-export function runCommand(object, command, isReturn = false) {
+export function runCommand(object, command) {
   try {
-    const commandResult = object.runCommand(command);
-    if (isReturn) return commandResult;
+    return object.runCommand(command);
   } catch (e) {
     error(`runCommand错误: command: "${command}" error: "${e}"`);
     return { object: object, command: command, error: e, successCount: 0 }
@@ -33,54 +36,6 @@ export function runCommand(object, command, isReturn = false) {
  * @returns {number} 衰减后的结果
  */
 export const exponentialDecay = (x, k = 0.1) => Math.exp(-k * x);
-
-/**
- * n次贝塞尔曲线插值
- * @param {number} t 输入值，范围：[0,1]
- * @param {Array<{t: number, value: number}>} points 插值点数组
- * @returns {number} 插值结果
- */
-export function nBezierInterpolation (t, points) {
-  // 如果只有一个点，直接返回该点的值
-  if (points.length === 1) return points[0].value;
-
-  // 如果只有两个点，使用线性插值
-  if (points.length === 2) {
-    const [p0, p1] = points;
-    // 线性插值公式: y = y0 + (y1-y0) * (t-t0)/(t1-t0)
-    if (p1.t === p0.t) return p0.value;
-    const ratio = (t - p0.t) / (p1.t - p0.t);
-    return p0.value + (p1.value - p0.value) * ratio;
-  }
-
-  // 对于多个点，使用de Casteljau算法计算n次贝塞尔曲线
-  // 首先复制点数组以避免修改原始数据
-  let tempPoints = points.map(point => point.value);
-
-  // 迭代计算直到只剩一个点
-  for (let i = 1; i < points.length; i++) {
-    for (let j = 0; j < points.length - i; j++) {
-      // 计算参数t在当前两点间的插值比例
-      const t0 = points[j].t;
-      const t1 = points[j + i].t;
-      let ratio;
-
-      // 避免除零错误
-      if (t1 === t0) {
-        ratio = 0;
-      } else {
-        // 将全局t映射到当前两点间的局部t
-        ratio = (t - t0) / (t1 - t0);
-        // 限制ratio在[0,1]范围内
-        ratio = Math.max(0, Math.min(1, ratio));
-      }
-
-      tempPoints[j] = tempPoints[j] * (1 - ratio) + tempPoints[j + 1] * ratio;
-    }
-  }
-
-  return tempPoints[0];
-};
 
 /**
  * 生成指定范围内的随机整数 [min, max]
@@ -136,4 +91,114 @@ export function weightedLottery(items, weights, totalWeight) {
     if (random < 0) return items[i];
   }
   return items[items.length - 1];
+}
+
+/**
+ * 创建粒子
+ * @param {mc.Player|mc.Dimension} target 目标对象
+ * @param {string} particleId 粒子ID
+ * @param {mc.Vector3} pos 粒子位置
+ * @throws 如果 target 不是 Player 或 Dimension 会抛出错误
+ */
+export function spawnParticle(target, particleId, pos) {
+  let dimension;
+  if (target instanceof mc.Player) dimension = target.dimension;
+  else if (target instanceof mc.Dimension) dimension = target;
+  else throw new TypeError("target must be a Player or Dimension");
+  if (Vector3.isSafe(dimension, pos)) target.spawnParticle(particleId, pos);
+  else runCommand(target, `particle ${particleId} ${pos.x} ${pos.y} ${pos.z}`);
+}
+
+/**
+ * 播放声音
+ * @param {mc.Player|mc.Dimension} target 播放目标
+ * @param {string} soundId 声音ID
+ * @param {mc.Vector3} pos 声音位置
+ * @param {number} volume 声音音量
+ * @param {number} pitch 声音调高
+ * @throws 如果 target 既不是 Player 也不是 Dimension 会抛出错误
+ */
+export function playSound(target, soundId, pos, volume = 1, pitch = 1) {
+  if (target instanceof mc.Player) {
+    const dimension = target.dimension;
+    if (Vector3.isSafe(dimension, pos)) target.playSound(soundId, { location: pos, volume, pitch });
+    else runCommand(target, `playsound ${soundId} @s ${pos.x} ${pos.y} ${pos.z} ${volume} ${pitch}`);
+  }
+  else if (target instanceof mc.Dimension) {
+    if (Vector3.isSafe(target, pos)) target.playSound(soundId, pos, { volume, pitch });
+    else runCommand(target, `playsound ${soundId} @a ${pos.x} ${pos.y} ${pos.z} ${volume} ${pitch}`);
+  }
+  else throw new TypeError("target must be a Player or Dimension");
+}
+
+/**
+ * 在指定玩家面前播放声音并指定距离
+ * @param {mc.Player} player 播放目标
+ * @param {string} soundId 声音ID
+ * @param {number} volume 音量
+ * @param {number} pitch 调高
+ * @param {number} distance 播放距离
+ */
+export function playSoundInFrontOfPlayer(player, soundId, volume = 1, pitch = 1, distance = 1) {
+  const pos = Vector3.inFrontOfEntity(player, distance);
+  playSound(player.dimension, soundId, pos, volume, pitch);
+}
+
+/**
+ * 创建实体
+ * @param {mc.Dimension} dimension 维度
+ * @param {string} entityId 实体ID
+ * @param {mc.Vector3} pos 实体位置
+ */
+export function spawnEntity(dimension ,entityId, pos) {
+  if (Vector3.isSafe(dimension, pos)) return dimension.spawnEntity(entityId, pos);
+  runCommand(dimension, `summon ${entityId} ${pos.x} ${pos.y} ${pos.z}`);
+}
+
+/**
+ * 判断玩家是否为创造模式
+ * @param {mc.Player} player
+ * @returns {boolean}
+ */
+export function isCreative(player) {
+  return player.getGameMode() === mc.GameMode.Creative;
+}
+
+/**
+ * 智能格式化数字（自动匹配语言单位阶梯，进行大数模糊压缩）
+ * 
+ * < 阈值：原样展示并加千分位（如 135,568）
+ * >= 阈值：进行单位模糊压缩（如 1558.5万 / 1.56M）
+ * 
+ * @param {number} num - 原始数字
+ * @param {string} lang - 当前语言代码（如 "zh_CN", "en_US"）
+ * @param {number} [threshold=1000000] - 触发压缩的阈值（默认 100 万）
+ * @returns {string} 格式化后的字符串
+ */
+export function formatNumberCompact(num, lang, threshold = 1000000) {
+  // 1. 容错处理
+  if (typeof num !== "number" || Number.isNaN(num)) return "0";
+  
+  const absNum = Math.abs(num);
+  
+  // 2. 低于阈值，直接返回千分位格式
+  if (absNum < threshold) {
+    return num.toLocaleString();
+  }
+
+  // 3. 获取对应语言的单位阶梯，若未找到则使用 default 兜底
+  const units = NumberUnits[lang] || NumberUnits.default;
+
+  // 4. 遍历阶梯进行计算压缩
+  for (const u of units) {
+    if (absNum >= u.value) {
+      const val = absNum / u.value;
+      // toFixed(2) 保留两位小数，parseFloat 去掉末尾无用的 0 (如 1558.50 -> 1558.5)
+      const formatted = parseFloat(val.toFixed(2));
+      return `${num < 0 ? "-" : ""}${formatted}${u.symbol}`;
+    }
+  }
+
+  // 兜底（正常逻辑走不到这里）
+  return num.toLocaleString();
 }
