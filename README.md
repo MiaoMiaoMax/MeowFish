@@ -1,50 +1,103 @@
-![项目图标](./pack_icon.png)
+![Project Icon](./pack_icon.png)
 
 # MeowFish
-_我的世界基岩版自动钓鱼 Minecraft Bedrock Auto Fishing_
-> Only Chinese versions available. (This sentence is machine-translated)
 
-## 当前版本
-v0.1.5-beta
+_Minecraft Bedrock Auto Fishing_
 
-## 使用方法
-持有钓鱼竿，下蹲抛竿即可触发。
+English | [简体中文](./README.zh-CN.md) | [繁體中文](./README.zh-TW.md)
 
-用纸张命名为 `MF设置` 、 `MF設置` 或 `MFSetting`   
-电脑端右键使用 或 手机端长按使用 -> 可打开个人设置
+MeowFish is an automatic fishing behavior pack for Minecraft Bedrock Edition. It provides automatic fishing, fishing rod durability protection, loot filtering, runtime monitoring, and more.
 
-个人设置里可设置以下功能：
-- 语言：目前有简体中文、繁体中文、英文
-- 强制自动：无论是否下蹲都会触发自动钓鱼
-- 耐久保护：保护钓鱼竿耐久（留1点耐久）
-- 替换：搜索背包替换当前钓鱼竿（如果当前钓鱼竿没耐久）
-- 减少下沉：钓鱼钩下沉幅度将会减少。(避免勾到其他实体）
-- 温馨提示：将在玩家进入游戏之后显示一个温馨提示。（有玩家的自动钓鱼的个人设置信息，和自动钓鱼的使用方法）
-- 战利品生成方式：可以选择原版风格（从浮漂处飞向玩家）、战利品将生成在玩家位置、战利品将生成在浮漂位置
-- 粒子效果：可以选择无粒子效果、少量粒子效果、正常粒子效果、华丽粒子效果（在 `SystemSettings.js` 中将 `fancy_particle` 设置为 `0` 禁用并隐藏华丽粒子效果选项，`fancy_particle` 默认为 `1` 即显示华丽粒子效果选项）
-- 音效音量：设置上钩音效的音量
-- 强制获取丛林群系钓鱼战利品：强制获取丛林生物群系的特殊钓鱼战利品（需在 `SystemSettings.js` 中将 `allow_jungle_loot` 设置为 `1` 显示该设置，`allow_jungle_loot` 默认为 `0` 即禁用并隐藏）
+## Current Version
 
-在 `行为包\scripts\` 目录的 [SystemSettings.js](./scripts/SystemSettings.js) 文件里有大部分功能的默认设置，设置之后只需要使用 `/reload` 命令即可刷新
+**v1.0.0**
 
-## 游戏版本
-适配游戏版本为 1.21.0 或 以上
+## Compatibility
 
-**_! 在 1.21.70 或更高版本可兼容成就 !_**
+- Minimum supported Minecraft version: **1.21.120**
+- Dependencies:
+  - `@minecraft/server` 2.3.0
+  - `@minecraft/server-ui` 2.0.0
+- Achievement compatibility: Achievements are compatible with supported versions except 1.26.50 and 1.26.51.
 
-## 须知
-请注意钓鱼机模式为实验性模式  
-准确率会比常规模式有所下降
+## Installation and Usage
 
-## 其他
-觉得项目有用的话，可以给个star好吗 QwQ  
-目前为beta测试，如果遇到问题，欢迎反馈
+1. Download and import the MeowFish behavior pack into Minecraft.
+2. Enable MeowFish in the Behavior Packs settings of your world.
+3. Hold a fishing rod and cast while sneaking to activate automatic fishing.
+4. To open the personal settings menu, rename a piece of paper to one of the following names:
+   - `MF设置`
+   - `MF設置`
+   - `MFSetting`
 
-> 你可以关注作者bilibli平台 [CNQuanYeCha](https://space.bilibili.com/1968985335) 的动态来获得相关消息  
-> 也欢迎加入Discord [MeewFish](https://discord.gg/VshSAY4wx6)
+   Right-click the paper on PC, or long-press it on mobile.
 
-> 本作品采用知识共享署名-非商业性-相同方式共享 4.0 国际许可协议进行许可。  
-> 要查看此许可证的副本，请访问 https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh
->
-> This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.  
-> To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/
+## Features
+
+### Automatic Fishing and Basic Settings
+
+The personal settings menu provides the following options:
+
+- **Language:** Simplified Chinese, Traditional Chinese, and English.
+- **Forced Automatic Fishing:** Activates automatic fishing without requiring the player to sneak.
+- **Durability Protection:** Protects fishing rod durability during fishing.
+- **Rod Replacement:** Searches the inventory for another usable fishing rod when the current rod is depleted.
+- **Reduced Bobber Sinking:** Reduces bobber sinking to help prevent interference with other entities.
+- **Welcome Tips:** Controls whether usage tips are displayed when players join the world.
+- **Loot Spawn Mode:** Choose between the vanilla-style effect (loot flies from the bobber to the player), spawning loot at the player's position, or spawning loot at the bobber's position.
+- **Particle Effects:** Choose from disabled, minimal, normal, and fancy particle effects. The fancy option can be controlled by administrators.
+- **Sound Volume:** Adjusts the fishing bite sound volume.
+
+### Loot Filtering
+
+When enabled by the administrator, loot filtering is available in Advanced Settings.
+
+- Supports whitelist and blacklist modes.
+- Allows individual filtering rules for each item.
+- Displays item icons in the filtering interface.
+- Includes a personal switch to enable or disable filtering.
+
+### Advanced Settings and Administration
+
+- **Reset to Defaults:** Resets personal settings.
+- **Administrator Access:** Enter the administration center after verifying an administrator key.
+- **Runtime Monitoring:** View players currently using automatic fishing and their states.
+- **Performance and Cache Monitoring:** View cache hit rates and check counts for status and velocity caches.
+- **Recent Issues:** View recently recorded runtime issues.
+- **Global Controls:** Administrators can pause or resume automatic fishing and manage active player sessions.
+
+## Loot System
+
+MeowFish uses built-in vanilla fishing loot tables and a loot roll engine to calculate rewards. The included data covers both regular and jungle fishing loot tables, including fish, junk, and treasure sub-tables.
+
+It also supports biome tag matching and diagnostic logs for empty or failed loot table loading.
+
+The built-in loot data reduces reliance on runtime queries of vanilla loot tables. Compatibility with modded loot tables depends on their data and item definitions.
+
+## Administrator Configuration
+
+The `scripts/SystemSettings.js` file in the behavior pack provides global configuration options, including default behavior, language, loot filtering, particle effects, circuit breakers, and debug logging.
+
+Read the comments for each option before modifying the configuration.
+
+After making changes:
+
+- **Single-player:** In a world with cheats enabled, execute `/reload` to reload the scripts. If cheats are not enabled, exit and reload the single-player world.
+- **Server:** Enter `reload` in the server's background console to reload the scripts.
+
+For normal gameplay, it is recommended to keep debug mode disabled.
+
+## About
+
+- **Author:** MiaoMiaoMax
+- **Bilibili:** [CNQuanYeCha](https://space.bilibili.com/1968985335)
+- **Project Repository:** [MiaoMiaoMax/MeowFish](https://github.com/MiaoMiaoMax/MeowFish)
+- **License:** CC BY-NC-SA 4.0
+
+If you find this project useful, please consider giving it a Star. Feedback and suggestions are also welcome!
+
+## License
+
+This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
+
+[View the license](https://creativecommons.org/licenses/by-nc-sa/4.0/)
